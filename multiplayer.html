@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>دودة الساحة — أونلاين</title>
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{
+    width:100%;height:100%;
+    overflow:hidden;
+    background:#0b0f14;
+    font-family:'Segoe UI', Tahoma, sans-serif;
+    touch-action:none;
+  }
+  #world{display:block; background:#0e1520;}
+
+  #ui{
+    position:fixed; inset:0;
+    pointer-events:none;
+    color:#e8f0ea;
+  }
+  .hud{
+    position:absolute; top:14px; right:14px;
+    text-align:right;
+    font-size:13px;
+    color:#8fa39a;
+    background:rgba(10,15,12,0.55);
+    padding:10px 16px;
+    border-radius:6px;
+    backdrop-filter:blur(6px);
+  }
+  .hud b{color:#8fffb0; font-size:16px;}
+  .hud .lives{margin-top:6px; display:flex; gap:4px; justify-content:flex-end;}
+  .hud .lives span{font-size:14px;}
+  .conn-status{
+    position:absolute; top:14px; left:50%; transform:translateX(-50%);
+    font-size:12px; padding:5px 12px; border-radius:20px;
+    background:rgba(10,15,12,0.7);
+  }
+  .conn-status.online{color:#8fffb0;}
+  .conn-status.offline{color:#ff6b5e;}
+
+  .leaderboard{
+    position:absolute; top:14px; left:14px;
+    background:rgba(10,15,12,0.55);
+    backdrop-filter:blur(6px);
+    border-radius:6px;
+    padding:12px 14px;
+    min-width:150px;
+    font-size:12.5px;
+  }
+  .leaderboard h4{color:#8fa39a; font-size:11px; font-weight:600; margin-bottom:8px;}
+  .lb-row{display:flex; justify-content:space-between; padding:3px 0; color:#cfe0d6;}
+  .lb-row.me{color:#8fffb0; font-weight:700;}
+  .lb-row span.n{color:#6f8577; margin-left:6px;}
+
+  .exit-btn{position:absolute; top:14px; right:14px; margin-top:0;}
+  .exit-btn button{
+    pointer-events:all; background:rgba(255,95,94,0.15);
+    border:1px solid rgba(255,95,94,0.5); color:#ff8f85;
+    font-size:12px; padding:7px 14px; border-radius:6px;
+    cursor:pointer; margin-top:8px; display:block; width:100%;
+  }
+
+  .center-msg{
+    position:absolute; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    flex-direction:column; gap:14px;
+    background:rgba(8,12,10,0.92);
+    pointer-events:all; text-align:center; padding:20px;
+    overflow-y:auto;
+  }
+  .center-msg.hidden{display:none;}
+  .center-msg h1{font-size:30px; color:#8fffb0; font-weight:800;}
+  .center-msg p{color:#9fb3a8; font-size:13.5px; max-width:340px; line-height:1.7;}
+  .center-msg input{
+    background:#182018; border:1px solid #2a3a2d;
+    color:#e8f0ea; padding:12px 16px; border-radius:6px;
+    font-size:15px; text-align:center; width:220px; outline:none;
+  }
+  .playbtn{
+    background:#8fffb0; color:#0b1410; border:none;
+    padding:13px 40px; border-radius:6px;
+    font-weight:800; font-size:15px; cursor:pointer;
+  }
+  .playbtn:disabled{opacity:0.5;}
+  .score-final{font-size:15px; color:#e8f0ea;}
+  .score-final b{color:#8fffb0; font-size:22px;}
+
+  .skin-picker{display:flex; gap:8px; flex-wrap:wrap; justify-content:center; max-width:340px;}
+  .skin-opt{
+    width:46px; height:32px; border-radius:4px; border:2px solid transparent;
+    cursor:pointer; overflow:hidden; display:flex; position:relative;
+  }
+  .skin-opt.selected{border-color:#fff;}
+  .skin-opt .stripe{flex:1; height:100%;}
+  #flagPicker{max-height:180px; overflow-y:auto; padding:6px; border:1px solid #223528; border-radius:8px;}
+  .label-sm{font-size:11px; color:#6f8577; margin-top:4px;}
+  .pattern-picker{display:flex; gap:8px; margin-top:2px; flex-wrap:wrap; justify-content:center; max-width:320px;}
+  .pattern-opt{
+    padding:7px 14px; border-radius:20px; background:#182018;
+    border:1px solid #2a3a2d; color:#9fb3a8; font-size:12px; cursor:pointer;
+  }
+  .pattern-opt.selected{background:#8fffb0; color:#0b1410; border-color:#8fffb0; font-weight:700;}
+
+  .players-online{
+    position:absolute; bottom:14px; right:14px;
+    background:rgba(10,15,12,0.55); padding:8px 14px; border-radius:6px;
+    font-size:12px; color:#8fa39a;
+  }
+  .players-online b{color:#8fffb0;}
+</style>
+</head>
+<body>
+
+<canvas id="world"></canvas>
+
+<div id="ui">
+  <div class="hud">
+    الطول: <b id="scoreVal">10</b>
+    <div class="lives" id="livesRow"></div>
+    <div class="exit-btn"><button id="exitBtn" style="pointer-events:all;">🚪 خروج</button></div>
+  </div>
+  <div class="conn-status offline" id="connStatus">جاري الاتصال...</div>
+  <div class="leaderboard" id="leaderboard">
+    <h4>الأفضل الآن</h4>
+    <div id="lbList"></div>
+  </div>
+  <div class="players-online">لاعبون متصلون: <b id="onlineCount">0</b></div>
+
+  <div class="center-msg" id="startScreen">
+    <h1>دودة الساحة — أونلاين</h1>
+    <p>العب مع أشخاص حقيقيين متصلين الآن. حرّك الفأرة أو إصبعك لتوجيه الدودة.</p>
+    <input type="text" id="nameInput" placeholder="اسمك" maxlength="12" value="لاعب">
+    <div>
+      <div class="label-sm">لون الدودة</div>
+      <div class="skin-picker" id="colorPicker"></div>
+    </div>
+    <div>
+      <div class="label-sm">🏳️ أعلام الدول</div>
+      <div class="skin-picker" id="flagPicker"></div>
+    </div>
+    <div>
+      <div class="label-sm">نمط الجلد</div>
+      <div class="pattern-picker" id="patternPicker"></div>
+    </div>
+    <button class="playbtn" id="playBtn">ادخل الساحة</button>
+    <p id="connectMsg" style="font-size:12px; color:#6f8577;"></p>
+  </div>
+
+  <div class="center-msg hidden" id="endScreen">
+    <h1 style="color:#ff6b5e;">انتهت الجولة</h1>
+    <p class="score-final">طولك النهائي: <b id="finalScore">0</b></p>
+    <p id="killedBy" style="color:#9fb3a8; font-size:13px;"></p>
+    <button class="playbtn" id="retryBtn">العب مرة أخرى</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  // ================= CONFIGURE YOUR SERVER URL HERE =================
+  const SERVER_URL = 'https://worm-game-server-production.up.railway.app';
+  // =====================================================================
+
+  const canvas = document.getElementById('world');
+  const ctx = canvas.getContext('2d');
+
+  let W, H, DPR;
+  function resize(){
+    DPR = Math.min(window.devicePixelRatio||1, 2);
+    W = window.innerWidth; H = window.innerHeight;
+    canvas.width = W*DPR; canvas.height = H*DPR;
+    canvas.style.width = W+'px'; canvas.style.height = H+'px';
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  const solidColors = [
+    {id:'mint', c:'#8fffb0', name:'نعناعي', stripes:['#8fffb0']},
+    {id:'sky', c:'#5fd8ff', name:'سماوي', stripes:['#5fd8ff']},
+    {id:'coral', c:'#ff9f5f', name:'مرجاني', stripes:['#ff9f5f']},
+    {id:'rose', c:'#ff5f8f', name:'وردي', stripes:['#ff5f8f']},
+    {id:'violet', c:'#c48fff', name:'بنفسجي', stripes:['#c48fff']},
+    {id:'gold', c:'#ffe45f', name:'ذهبي', stripes:['#ffe45f']}
+  ];
+  const flagSkins = [
+    {id:'saudi', name:'السعودية', emoji:'🇸🇦', stripes:['#0b7a3f','#ffffff']},
+    {id:'uae', name:'الإمارات', emoji:'🇦🇪', stripes:['#ce1126','#00732f','#ffffff','#111111']},
+    {id:'egypt', name:'مصر', emoji:'🇪🇬', stripes:['#c8102e','#ffffff','#111111']},
+    {id:'kuwait', name:'الكويت', emoji:'🇰🇼', stripes:['#007a3d','#ffffff','#ce1126','#111111']},
+    {id:'jordan', name:'الأردن', emoji:'🇯🇴', stripes:['#111111','#ffffff','#007a3d']},
+    {id:'usa', name:'أمريكا', emoji:'🇺🇸', stripes:['#3c3b6e','#ffffff','#b22234']},
+    {id:'japan', name:'اليابان', emoji:'🇯🇵', stripes:['#ffffff','#bc002d']},
+    {id:'brazil', name:'البرازيل', emoji:'🇧🇷', stripes:['#009c3b','#ffdf00','#002776']}
+  ];
+  flagSkins.forEach(f=>{ f.c = f.stripes[0]; });
+  const patterns = ['صلب','مخطط','منقط'];
+
+  let chosenSkin = solidColors[0];
+  let chosenPattern = 'صلب';
+
+  // ---- picker UI ----
+  const colorPickerEl = document.getElementById('colorPicker');
+  const flagPickerEl = document.getElementById('flagPicker');
+  function makeSkinBtn(s, container, isFirst){
+    const btn = document.createElement('div');
+    btn.className = 'skin-opt' + (isFirst?' selected':'');
+    btn.title = s.name;
+    s.stripes.forEach(c=>{
+      const band = document.createElement('div');
+      band.className = 'stripe'; band.style.background = c;
+      btn.appendChild(band);
+    });
+    btn.addEventListener('click', ()=>{
+      chosenSkin = s;
+      [...colorPickerEl.children, ...flagPickerEl.children].forEach(c=>c.classList.remove('selected'));
+      btn.classList.add('selected');
+    });
+    container.appendChild(btn);
+  }
+  solidColors.forEach((s,i)=>makeSkinBtn(s,colorPickerEl,i===0));
+  flagSkins.forEach(s=>makeSkinBtn(s,flagPickerEl,false));
+
+  const patternPickerEl = document.getElementById('patternPicker');
+  patterns.forEach((p,i)=>{
+    const btn = document.createElement('div');
+    btn.className = 'pattern-opt' + (i===0?' selected':'');
+    btn.textContent = p;
+    btn.addEventListener('click', ()=>{
+      chosenPattern = p;
+      [...patternPickerEl.children].forEach(c=>c.classList.remove('selected'));
+      btn.classList.add('selected');
+    });
+    patternPickerEl.appendChild(btn);
+  });
+
+  // ================= SOCKET CONNECTION =================
+  const socket = io(SERVER_URL, { transports: ['websocket', 'polling'] });
+  let myId = null;
+  let worldState = { worms: [], food: [], worldRadius: 2200 };
+  let running = false;
+  let playing = false;
+
+  const connStatus = document.getElementById('connStatus');
+  const playBtn = document.getElementById('playBtn');
+  const connectMsg = document.getElementById('connectMsg');
+
+  socket.on('connect', ()=>{
+    connStatus.textContent = 'متصل بالسيرفر';
+    connStatus.className = 'conn-status online';
+    playBtn.disabled = false;
+    connectMsg.textContent = '';
+  });
+  socket.on('disconnect', ()=>{
+    connStatus.textContent = 'انقطع الاتصال...';
+    connStatus.className = 'conn-status offline';
+    playBtn.disabled = true;
+  });
+  socket.on('connect_error', ()=>{
+    connStatus.textContent = 'تعذر الاتصال بالسيرفر';
+    connStatus.className = 'conn-status offline';
+    connectMsg.textContent = 'تأكد أن رابط السيرفر صحيح وأنه يعمل';
+    playBtn.disabled = true;
+  });
+
+  socket.on('joined', (data)=>{
+    myId = data.id;
+    worldState.worldRadius = data.worldRadius;
+    playing = true;
+    running = true;
+    document.getElementById('startScreen').classList.add('hidden');
+    document.getElementById('endScreen').classList.add('hidden');
+  });
+
+  socket.on('state', (data)=>{
+    worldState = data;
+    document.getElementById('onlineCount').textContent = data.worms.length;
+    if(playing) updateHud();
+  });
+
+  socket.on('youDied', (data)=>{
+    playing = false;
+    document.getElementById('finalScore').textContent = data.finalLength;
+    document.getElementById('killedBy').textContent = 'انتهت جولتك';
+    document.getElementById('endScreen').classList.remove('hidden');
+  });
+
+  socket.on('youRespawned', (data)=>{
+    // lives system handled server-side; just continue playing
+  });
+
+  playBtn.disabled = true;
+  connectMsg.textContent = 'جاري الاتصال بالسيرفر...';
+
+  // ---- join / retry ----
+  function join(){
+    const name = (document.getElementById('nameInput').value || 'لاعب').slice(0,12);
+    socket.emit('join', { name, skin: chosenSkin, pattern: chosenPattern });
+  }
+  playBtn.addEventListener('click', join);
+  document.getElementById('retryBtn').addEventListener('click', ()=>{
+    document.getElementById('endScreen').classList.add('hidden');
+    join();
+  });
+  document.getElementById('exitBtn').addEventListener('click', ()=>{
+    playing = false;
+    running = false;
+    socket.disconnect();
+    socket.connect();
+    document.getElementById('startScreen').classList.remove('hidden');
+  });
+
+  // ---- input: send direction to server ----
+  let pointer = {x:0,y:0,active:false};
+  let boosting = false;
+  canvas.addEventListener('mousemove', e=>{ pointer.x=e.clientX; pointer.y=e.clientY; pointer.active=true; });
+  canvas.addEventListener('touchmove', e=>{
+    const t=e.touches[0]; pointer.x=t.clientX; pointer.y=t.clientY; pointer.active=true; e.preventDefault();
+  }, {passive:false});
+  canvas.addEventListener('touchstart', e=>{
+    const t=e.touches[0]; pointer.x=t.clientX; pointer.y=t.clientY; pointer.active=true; e.preventDefault();
+  }, {passive:false});
+  // boosting is a deliberate second finger / long-press, not implicit on every touch;
+  // simplest reliable version: hold anywhere for 250ms without moving = boost
+  let touchHoldTimer = null;
+  canvas.addEventListener('touchstart', ()=>{
+    clearTimeout(touchHoldTimer);
+    touchHoldTimer = setTimeout(()=>{ boosting = true; }, 250);
+  });
+  canvas.addEventListener('touchend', ()=>{ clearTimeout(touchHoldTimer); boosting=false; });
+  window.addEventListener('mousedown', ()=>{ boosting=true; });
+  window.addEventListener('mouseup', ()=>{ boosting=false; });
+
+  setInterval(()=>{
+    if(!playing) return;
+    if(!pointer.active){
+      socket.emit('input', { angle: null, boosting: false });
+      return;
+    }
+    const dx = pointer.x - W/2, dy = pointer.y - H/2;
+    if(Math.abs(dx)>4 || Math.abs(dy)>4){
+      socket.emit('input', { angle: Math.atan2(dy,dx), boosting });
+    }
+  }, 50); // send input ~20x/sec, server runs its own authoritative tick
+
+  // ---- HUD ----
+  function findMe(){ return worldState.worms.find(w=>w.id===myId); }
+  function updateHud(){
+    const me = findMe();
+    if(me) document.getElementById('scoreVal').textContent = me.segs.length;
+    const ranked = [...worldState.worms].sort((a,b)=>b.segs.length-a.segs.length).slice(0,5);
+    document.getElementById('lbList').innerHTML = ranked.map((w,i)=>`
+      <div class="lb-row ${w.id===myId?'me':''}">
+        <span>${i+1}. ${w.name}</span><span class="n">${w.segs.length}</span>
+      </div>
+    `).join('');
+  }
+
+  // ---- drawing (reuses same visual style as the offline version) ----
+  function drawFoodItem(f){
+    if(f.type==='fruit'){
+      ctx.save(); ctx.translate(f.x,f.y); ctx.rotate(f.rot||0);
+      ctx.fillStyle = '#ff9f1c';
+      ctx.beginPath(); ctx.arc(0,0,f.r,0,Math.PI*2); ctx.fill();
+      ctx.restore();
+    } else if(f.type==='candy' || f.type==='bigcandy'){
+      ctx.fillStyle = f.color || '#ff5f8f';
+      ctx.beginPath(); ctx.arc(f.x,f.y,f.r,0,Math.PI*2); ctx.fill();
+    } else if(f.type==='bonus'){
+      ctx.fillStyle = '#ffe45f';
+      ctx.beginPath(); ctx.arc(f.x,f.y,f.r,0,Math.PI*2); ctx.fill();
+    } else if(f.type==='heart'){
+      ctx.fillStyle = '#ff5f7a';
+      ctx.beginPath(); ctx.arc(f.x,f.y,f.r,0,Math.PI*2); ctx.fill();
+    } else if(f.type==='mult'){
+      const colorByVal = {2:'#8fffb0',4:'#5fd8ff',8:'#ffe45f',16:'#ff5f5f'};
+      ctx.fillStyle = colorByVal[f.value] || '#8fffb0';
+      ctx.beginPath(); ctx.arc(f.x,f.y,f.r,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#0b1410'; ctx.font = 'bold 10px sans-serif'; ctx.textAlign='center';
+      ctx.fillText('×'+f.value, f.x, f.y+3);
+    }
+  }
+
+  function drawWorm(w){
+    ctx.lineJoin='round'; ctx.lineCap='round';
+    const stripes = (w.stripes && w.stripes.length) ? w.stripes : [w.color];
+    if(stripes.length===1){
+      ctx.strokeStyle = stripes[0]; ctx.lineWidth = w.thickness;
+      ctx.beginPath(); ctx.moveTo(w.segs[0].x,w.segs[0].y);
+      for(let i=1;i<w.segs.length;i+=2) ctx.lineTo(w.segs[i].x,w.segs[i].y);
+      ctx.stroke();
+    } else {
+      const bandSize=5;
+      for(let i=0;i<w.segs.length-1;i++){
+        ctx.strokeStyle = stripes[Math.floor(i/bandSize)%stripes.length];
+        ctx.lineWidth = w.thickness;
+        ctx.beginPath(); ctx.moveTo(w.segs[i].x,w.segs[i].y); ctx.lineTo(w.segs[i+1].x,w.segs[i+1].y); ctx.stroke();
+      }
+    }
+    const head = w.segs[0];
+    ctx.fillStyle = w.color;
+    ctx.beginPath(); ctx.arc(head.x,head.y,w.thickness*0.62,0,Math.PI*2); ctx.fill();
+    const ex=Math.cos(w.dir), ey=Math.sin(w.dir), px=-ey, py=ex;
+    ctx.fillStyle = '#0b1410';
+    [1,-1].forEach(side=>{
+      const ox = head.x+ex*w.thickness*0.35+px*side*w.thickness*0.32;
+      const oy = head.y+ey*w.thickness*0.35+py*side*w.thickness*0.32;
+      ctx.beginPath(); ctx.arc(ox,oy,w.thickness*0.15,0,Math.PI*2); ctx.fill();
+    });
+    ctx.fillStyle = 'rgba(255,255,255,0.8)'; ctx.font='12px sans-serif'; ctx.textAlign='center';
+    const label = w.emoji ? `${w.emoji} ${w.name}` : w.name;
+    ctx.fillText(label, head.x, head.y - w.thickness - 8);
+  }
+
+  function render(){
+    ctx.fillStyle = '#0e1520'; ctx.fillRect(0,0,W,H);
+    const me = findMe();
+    const camX = me ? me.segs[0].x : 0, camY = me ? me.segs[0].y : 0;
+    ctx.save(); ctx.translate(W/2-camX, H/2-camY);
+
+    ctx.strokeStyle = 'rgba(255,95,95,0.35)'; ctx.lineWidth=6;
+    ctx.beginPath(); ctx.arc(0,0,worldState.worldRadius,0,Math.PI*2); ctx.stroke();
+
+    for(const f of worldState.food) drawFoodItem(f);
+    for(const w of worldState.worms) drawWorm(w);
+
+    ctx.restore();
+    requestAnimationFrame(render);
+  }
+  requestAnimationFrame(render);
+})();
+</script>
+</body>
+</html>

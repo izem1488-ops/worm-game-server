@@ -23,7 +23,7 @@ app.get('/', (req, res) => {
 // ---------------- Game constants ----------------
 const WORLD_R = 2200;
 const FOOD_COUNT = 220;
-const TICK_RATE = 30; // server updates per second
+const TICK_RATE = 20; // server updates per second
 const SPECIAL_CHANCE = { candy: 0.14, bigcandy: 0.03, bonus: 0.045, heart: 0.045, mult2: 0.03, mult4: 0.018, mult8: 0.008, mult16: 0.003 };
 const MULT_DURATION = 30;
 
@@ -267,14 +267,18 @@ setInterval(() => {
   for (const id in players) { if (players[id].alive) eatFood(players[id]); }
   checkCollisions();
 
-  // broadcast compact world state to everyone
+  // broadcast compact world state to everyone.
+  // Sending every segment for every worm at 30x/sec gets heavy fast as worms
+  // grow, so we thin the segment list (every 3rd point) — the client already
+  // draws using a stride, so visual smoothness barely changes.
   const worms = Object.values(players)
     .filter(w => w.alive)
     .map(w => ({
       id: w.id, name: w.name, color: w.color, stripes: w.stripes, emoji: w.emoji,
       pattern: w.pattern, face: w.face, dir: w.dir, thickness: w.thickness,
       multiplier: w.multiplier, multTimeLeft: Math.ceil(w.multTimeLeft),
-      lives: w.lives, segs: w.segs
+      lives: w.lives,
+      segs: w.segs.filter((_, i) => i % 3 === 0)
     }));
 
   io.emit('state', { worms, food, worldRadius: WORLD_R });
