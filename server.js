@@ -41,19 +41,20 @@ let food = [];
 const players = {}; // socket.id -> worm state
 
 function makeFoodItem(x, y) {
+  const pulse = Math.random() * 10;
   const r = Math.random();
-  if (r < SPECIAL_CHANCE.mult16) return { x, y, type: 'mult', value: 16, r: 11 };
-  if (r < SPECIAL_CHANCE.mult16 + SPECIAL_CHANCE.mult8) return { x, y, type: 'mult', value: 8, r: 10 };
-  if (r < SPECIAL_CHANCE.mult16 + SPECIAL_CHANCE.mult8 + SPECIAL_CHANCE.mult4) return { x, y, type: 'mult', value: 4, r: 9 };
-  if (r < SPECIAL_CHANCE.mult16 + SPECIAL_CHANCE.mult8 + SPECIAL_CHANCE.mult4 + SPECIAL_CHANCE.mult2) return { x, y, type: 'mult', value: 2, r: 8 };
+  if (r < SPECIAL_CHANCE.mult16) return { x, y, type: 'mult', value: 16, r: 11, pulse };
+  if (r < SPECIAL_CHANCE.mult16 + SPECIAL_CHANCE.mult8) return { x, y, type: 'mult', value: 8, r: 10, pulse };
+  if (r < SPECIAL_CHANCE.mult16 + SPECIAL_CHANCE.mult8 + SPECIAL_CHANCE.mult4) return { x, y, type: 'mult', value: 4, r: 9, pulse };
+  if (r < SPECIAL_CHANCE.mult16 + SPECIAL_CHANCE.mult8 + SPECIAL_CHANCE.mult4 + SPECIAL_CHANCE.mult2) return { x, y, type: 'mult', value: 2, r: 8, pulse };
   const base = SPECIAL_CHANCE.mult16 + SPECIAL_CHANCE.mult8 + SPECIAL_CHANCE.mult4 + SPECIAL_CHANCE.mult2;
-  if (r < base + SPECIAL_CHANCE.heart) return { x, y, type: 'heart', r: 12 };
-  if (r < base + SPECIAL_CHANCE.heart + SPECIAL_CHANCE.bonus) return { x, y, type: 'bonus', r: 13 };
+  if (r < base + SPECIAL_CHANCE.heart) return { x, y, type: 'heart', r: 12, pulse };
+  if (r < base + SPECIAL_CHANCE.heart + SPECIAL_CHANCE.bonus) return { x, y, type: 'bonus', r: 13, pulse };
   if (r < base + SPECIAL_CHANCE.heart + SPECIAL_CHANCE.bonus + SPECIAL_CHANCE.bigcandy) {
-    return { x, y, type: 'bigcandy', r: 16, color: ['#ff5f8f', '#5fd8ff', '#ffe45f', '#c48fff'][Math.floor(Math.random() * 4)] };
+    return { x, y, type: 'bigcandy', r: 16, color: ['#ff5f8f', '#5fd8ff', '#ffe45f', '#c48fff'][Math.floor(Math.random() * 4)], pulse };
   }
   if (r < base + SPECIAL_CHANCE.heart + SPECIAL_CHANCE.bonus + SPECIAL_CHANCE.bigcandy + SPECIAL_CHANCE.candy) {
-    return { x, y, type: 'candy', r: 8, color: ['#ff5f8f', '#5fd8ff', '#ffe45f'][Math.floor(Math.random() * 3)] };
+    return { x, y, type: 'candy', r: 8, color: ['#ff5f8f', '#5fd8ff', '#ffe45f'][Math.floor(Math.random() * 3)], pulse };
   }
   return { x, y, type: 'fruit', shape: fruitShapes[Math.floor(Math.random() * fruitShapes.length)], r: rand(10, 13), rot: Math.random() * Math.PI * 2 };
 }
@@ -249,6 +250,10 @@ io.on('connection', (socket) => {
     const skin = data?.skin || {};
     players[socket.id] = makeWorm(socket.id, data?.name, skin, data?.pattern, data?.face);
     socket.emit('joined', { id: socket.id, worldRadius: WORLD_R });
+  });
+
+  socket.on('leave', () => {
+    delete players[socket.id];
   });
 
   socket.on('disconnect', () => {

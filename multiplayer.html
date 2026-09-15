@@ -32,15 +32,10 @@
     backdrop-filter:blur(6px);
   }
   .hud b{color:#8fffb0; font-size:16px;}
-  .hud .lives{margin-top:6px; display:flex; gap:4px; justify-content:flex-end;}
-  .hud .lives span{font-size:14px;}
-  .conn-status{
-    position:absolute; top:14px; left:50%; transform:translateX(-50%);
-    font-size:12px; padding:5px 12px; border-radius:20px;
-    background:rgba(10,15,12,0.7);
+  .hud .lives{
+    margin-top:6px; display:flex; gap:4px; justify-content:flex-end;
   }
-  .conn-status.online{color:#8fffb0;}
-  .conn-status.offline{color:#ff6b5e;}
+  .hud .lives span{font-size:14px;}
 
   .leaderboard{
     position:absolute; top:14px; left:14px;
@@ -51,17 +46,24 @@
     min-width:150px;
     font-size:12.5px;
   }
-  .leaderboard h4{color:#8fa39a; font-size:11px; font-weight:600; margin-bottom:8px;}
-  .lb-row{display:flex; justify-content:space-between; padding:3px 0; color:#cfe0d6;}
+  .leaderboard h4{
+    color:#8fa39a; font-size:11px; font-weight:600;
+    margin-bottom:8px; letter-spacing:0.3px;
+  }
+  .lb-row{
+    display:flex; justify-content:space-between;
+    padding:3px 0; color:#cfe0d6;
+  }
   .lb-row.me{color:#8fffb0; font-weight:700;}
   .lb-row span.n{color:#6f8577; margin-left:6px;}
 
-  .exit-btn{position:absolute; top:14px; right:14px; margin-top:0;}
-  .exit-btn button{
-    pointer-events:all; background:rgba(255,95,94,0.15);
-    border:1px solid rgba(255,95,94,0.5); color:#ff8f85;
-    font-size:12px; padding:7px 14px; border-radius:6px;
-    cursor:pointer; margin-top:8px; display:block; width:100%;
+  .boost-bonus{
+    position:absolute; top:50%; left:50%;
+    transform:translate(-50%,-50%);
+    pointer-events:none;
+    font-size:22px; font-weight:800;
+    text-shadow:0 2px 12px rgba(0,0,0,0.6);
+    opacity:0; transition:opacity .15s ease, transform .5s ease;
   }
 
   .center-msg{
@@ -69,85 +71,224 @@
     display:flex; align-items:center; justify-content:center;
     flex-direction:column; gap:14px;
     background:rgba(8,12,10,0.92);
-    pointer-events:all; text-align:center; padding:20px;
+    pointer-events:all;
+    text-align:center;
+    padding:20px;
     overflow-y:auto;
   }
   .center-msg.hidden{display:none;}
-  .center-msg h1{font-size:30px; color:#8fffb0; font-weight:800;}
+  .center-msg h1{
+    font-size:32px; color:#8fffb0; font-weight:800;
+    letter-spacing:-0.5px;
+  }
   .center-msg p{color:#9fb3a8; font-size:13.5px; max-width:340px; line-height:1.7;}
   .center-msg input{
     background:#182018; border:1px solid #2a3a2d;
     color:#e8f0ea; padding:12px 16px; border-radius:6px;
-    font-size:15px; text-align:center; width:220px; outline:none;
+    font-size:15px; text-align:center; width:220px;
+    outline:none;
   }
+  .center-msg input:focus{border-color:#8fffb0;}
   .playbtn{
     background:#8fffb0; color:#0b1410; border:none;
     padding:13px 40px; border-radius:6px;
     font-weight:800; font-size:15px; cursor:pointer;
+    letter-spacing:0.3px;
   }
-  .playbtn:disabled{opacity:0.5;}
+  .playbtn:active{transform:scale(0.97);}
   .score-final{font-size:15px; color:#e8f0ea;}
   .score-final b{color:#8fffb0; font-size:22px;}
 
-  .skin-picker{display:flex; gap:8px; flex-wrap:wrap; justify-content:center; max-width:340px;}
-  .skin-opt{
-    width:46px; height:32px; border-radius:4px; border:2px solid transparent;
-    cursor:pointer; overflow:hidden; display:flex; position:relative;
+  .skin-picker{
+    display:flex; gap:8px; flex-wrap:wrap; justify-content:center;
+    max-width:340px;
   }
-  .skin-opt.selected{border-color:#fff;}
+  #flagPicker{
+    max-height:180px;
+    overflow-y:auto;
+    padding:6px;
+    border:1px solid #223528;
+    border-radius:8px;
+    background:rgba(255,255,255,0.02);
+  }
+  #flagPicker::-webkit-scrollbar{width:6px;}
+  #flagPicker::-webkit-scrollbar-thumb{background:#2a3a2d; border-radius:3px;}
+  .skin-opt{
+    width:46px; height:32px; border-radius:4px;
+    border:2px solid transparent;
+    cursor:pointer;
+    overflow:hidden;
+    display:flex;
+    position:relative;
+  }
+  .skin-opt.selected{border-color:#fff; box-shadow:0 0 0 2px rgba(255,255,255,0.3);}
   .skin-opt .stripe{flex:1; height:100%;}
-  #flagPicker{max-height:180px; overflow-y:auto; padding:6px; border:1px solid #223528; border-radius:8px;}
-  .label-sm{font-size:11px; color:#6f8577; margin-top:4px;}
-  .pattern-picker{display:flex; gap:8px; margin-top:2px; flex-wrap:wrap; justify-content:center; max-width:320px;}
+
+  .pattern-picker{
+    display:flex; gap:8px; margin-top:2px;
+    flex-wrap:wrap; justify-content:center; max-width:320px;
+  }
   .pattern-opt{
-    padding:7px 14px; border-radius:20px; background:#182018;
-    border:1px solid #2a3a2d; color:#9fb3a8; font-size:12px; cursor:pointer;
+    padding:7px 14px; border-radius:20px;
+    background:#182018; border:1px solid #2a3a2d;
+    color:#9fb3a8; font-size:12px; cursor:pointer;
   }
   .pattern-opt.selected{background:#8fffb0; color:#0b1410; border-color:#8fffb0; font-weight:700;}
 
+  .label-sm{font-size:11px; color:#6f8577; letter-spacing:0.3px; margin-top:4px;}
+
+  .exit-btn{
+    position:absolute; top:14px; right:14px;
+    margin-top:0;
+  }
+  .exit-btn button{
+    pointer-events:all;
+    background:rgba(255,95,94,0.15);
+    border:1px solid rgba(255,95,94,0.5);
+    color:#ff8f85;
+    font-size:12px;
+    padding:7px 14px;
+    border-radius:6px;
+    cursor:pointer;
+    margin-top:8px;
+    display:block;
+    width:100%;
+  }
+  .exit-btn button:active{background:rgba(255,95,94,0.28);}
+
+  .conn-status{
+    position:absolute; top:14px; left:50%; transform:translateX(-50%);
+    font-size:12px; padding:5px 12px; border-radius:20px;
+    background:rgba(10,15,12,0.7);
+  }
+  .conn-status.online{color:#8fffb0;}
+  .conn-status.offline{color:#ff6b5e;}
   .players-online{
     position:absolute; bottom:14px; right:14px;
     background:rgba(10,15,12,0.55); padding:8px 14px; border-radius:6px;
     font-size:12px; color:#8fa39a;
   }
   .players-online b{color:#8fffb0;}
+
+  .confirm-box{
+    position:absolute; inset:0;
+    background:rgba(6,10,8,0.85);
+    display:flex; align-items:center; justify-content:center;
+    pointer-events:all;
+  }
+  .confirm-box.hidden{display:none;}
+  .confirm-card{
+    background:#141c17; border:1px solid #2a3a2d;
+    border-radius:10px; padding:24px 28px;
+    text-align:center; max-width:280px;
+  }
+  .confirm-card p{color:#cfe0d6; font-size:14px; margin-bottom:16px;}
+  .confirm-row{display:flex; gap:10px; justify-content:center;}
+  .confirm-row button{
+    border:none; border-radius:6px; padding:9px 18px;
+    font-size:13px; font-weight:700; cursor:pointer;
+  }
+  .confirm-yes{background:#ff6b5e; color:#fff;}
+  .confirm-no{background:#2a3a2d; color:#cfe0d6;}
+
+  .minimap{
+    position:absolute; bottom:14px; left:14px;
+    width:100px; height:100px;
+    background:rgba(10,15,12,0.6);
+    border:1px solid #2a3a2d;
+    border-radius:50%;
+    backdrop-filter:blur(4px);
+  }
+
+  .legend{
+    position:absolute; bottom:14px; right:14px;
+    background:rgba(10,15,12,0.55);
+    backdrop-filter:blur(6px);
+    border-radius:6px;
+    padding:8px 12px;
+    font-size:11px;
+    color:#8fa39a;
+    display:flex; flex-direction:column; gap:3px;
+  }
+  .legend span{margin-left:6px;}
+
+  @media (max-width:640px){
+    .legend{display:none;}
+    .leaderboard{
+      top:auto; bottom:120px; left:8px;
+      min-width:120px; padding:8px 10px; font-size:11px;
+    }
+  }
 </style>
 </head>
 <body>
 
 <canvas id="world"></canvas>
+<canvas id="mini" class="minimap"></canvas>
 
 <div id="ui">
   <div class="hud">
     الطول: <b id="scoreVal">10</b>
     <div class="lives" id="livesRow"></div>
-    <div class="exit-btn"><button id="exitBtn" style="pointer-events:all;">🚪 خروج</button></div>
+    <div id="multRow" style="display:none; margin-top:6px; color:#ffe45f; font-weight:700;">
+      ×<span id="multVal">1</span> <span id="multTimer" style="color:#8fa39a; font-weight:400;"></span>
+    </div>
+    <div class="exit-btn"><button id="exitBtn" style="pointer-events:all;">🚪 خروج / إعادة</button></div>
   </div>
-  <div class="conn-status offline" id="connStatus">جاري الاتصال...</div>
   <div class="leaderboard" id="leaderboard">
     <h4>الأفضل الآن</h4>
     <div id="lbList"></div>
   </div>
+  <div class="conn-status offline" id="connStatus">جاري الاتصال...</div>
   <div class="players-online">لاعبون متصلون: <b id="onlineCount">0</b></div>
+  <div class="legend">
+    <div>🍇 فاكهة — نمو عادي</div>
+    <div>🍬 حلوى — نمو أسرع</div>
+    <div>🍭 حلوى كبيرة — نمو كبير</div>
+    <div>⚡ بونص — نمو فوري كبير</div>
+    <div>❤️ قلب — حياة إضافية</div>
+    <div>×2 ×4 ×8 ×16 — مضاعف الأكل لـ٣٠ث</div>
+  </div>
+  <div class="boost-bonus" id="boostPopup"></div>
+
+  <div class="confirm-box hidden" id="confirmBox">
+    <div class="confirm-card">
+      <p>هل تريد الخروج وإعادة اللعبة من البداية؟</p>
+      <div class="confirm-row">
+        <button class="confirm-yes" id="confirmYes">نعم، إعادة</button>
+        <button class="confirm-no" id="confirmNo">تراجع</button>
+      </div>
+    </div>
+  </div>
 
   <div class="center-msg" id="startScreen">
-    <h1>دودة الساحة — أونلاين</h1>
-    <p>العب مع أشخاص حقيقيين متصلين الآن. حرّك الفأرة أو إصبعك لتوجيه الدودة.</p>
-    <input type="text" id="nameInput" placeholder="اسمك" maxlength="12" value="لاعب">
+    <h1>دودة الساحة</h1>
+    <p>حرّك الفأرة أو إصبعك لتوجيه الدودة. اجمع الطعام لتكبر، وتجنب أجسام الدود الأخرى.</p>
+
+    <input type="text" id="nameInput" placeholder="اسمك" maxlength="12" value="أنا">
+
     <div>
       <div class="label-sm">لون الدودة</div>
       <div class="skin-picker" id="colorPicker"></div>
     </div>
+
     <div>
-      <div class="label-sm">🏳️ أعلام الدول</div>
+      <div class="label-sm">🏳️ أعلام الدول (<span id="flagCount"></span>)</div>
       <div class="skin-picker" id="flagPicker"></div>
+      <div class="label-sm" id="skinNameLabel" style="margin-top:6px; color:#cfe0d6;"></div>
     </div>
+
     <div>
       <div class="label-sm">نمط الجلد</div>
       <div class="pattern-picker" id="patternPicker"></div>
     </div>
+
+    <div>
+      <div class="label-sm">🙂 وجه الدودة</div>
+      <div class="pattern-picker" id="facePicker"></div>
+    </div>
+
     <button class="playbtn" id="playBtn">ادخل الساحة</button>
-    <p id="connectMsg" style="font-size:12px; color:#6f8577;"></p>
   </div>
 
   <div class="center-msg hidden" id="endScreen">
@@ -160,12 +301,10 @@
 
 <script>
 (function(){
-  // ================= CONFIGURE YOUR SERVER URL HERE =================
-  const SERVER_URL = 'https://worm-game-server-production.up.railway.app';
-  // =====================================================================
-
   const canvas = document.getElementById('world');
   const ctx = canvas.getContext('2d');
+  const mini = document.getElementById('mini');
+  const mctx = mini.getContext('2d');
 
   let W, H, DPR;
   function resize(){
@@ -174,55 +313,847 @@
     canvas.width = W*DPR; canvas.height = H*DPR;
     canvas.style.width = W+'px'; canvas.style.height = H+'px';
     ctx.setTransform(DPR,0,0,DPR,0,0);
+    mini.width = 100*DPR; mini.height = 100*DPR;
+    mini.style.width='100px'; mini.style.height='100px';
+    mctx.setTransform(DPR,0,0,DPR,0,0);
   }
   window.addEventListener('resize', resize);
-  resize();
 
+  const WORLD_R = 2200;
+  const FOOD_COUNT = 180;
+  const SPECIAL_CHANCE = { candy:0.14, bigcandy:0.03, bonus:0.045, heart:0.045, mult2:0.03, mult4:0.018, mult8:0.008, mult16:0.003 };
+  const MULT_DURATION = 30; // seconds
+
+  // Solid color skins
   const solidColors = [
-    {id:'mint', c:'#8fffb0', name:'نعناعي', stripes:['#8fffb0']},
-    {id:'sky', c:'#5fd8ff', name:'سماوي', stripes:['#5fd8ff']},
-    {id:'coral', c:'#ff9f5f', name:'مرجاني', stripes:['#ff9f5f']},
-    {id:'rose', c:'#ff5f8f', name:'وردي', stripes:['#ff5f8f']},
-    {id:'violet', c:'#c48fff', name:'بنفسجي', stripes:['#c48fff']},
-    {id:'gold', c:'#ffe45f', name:'ذهبي', stripes:['#ffe45f']}
+    {id:'mint',    c:'#8fffb0', name:'نعناعي',   stripes:['#8fffb0']},
+    {id:'sky',     c:'#5fd8ff', name:'سماوي',    stripes:['#5fd8ff']},
+    {id:'coral',   c:'#ff9f5f', name:'مرجاني',   stripes:['#ff9f5f']},
+    {id:'rose',    c:'#ff5f8f', name:'وردي',     stripes:['#ff5f8f']},
+    {id:'violet',  c:'#c48fff', name:'بنفسجي',   stripes:['#c48fff']},
+    {id:'gold',    c:'#ffe45f', name:'ذهبي',     stripes:['#ffe45f']},
+    {id:'aqua',    c:'#5fffe0', name:'فيروزي',   stripes:['#5fffe0']},
+    {id:'ember',   c:'#ff6b5e', name:'ناري',     stripes:['#ff6b5e']},
+    {id:'silver',  c:'#c9d6cf', name:'فضي',      stripes:['#c9d6cf']},
+    {id:'obsidian',c:'#3a3a3a', name:'أسود لامع', stripes:['#3a3a3a','#5a5a5a']}
   ];
+
+  // Flag-inspired skins: each has a name and a stripe list (colors read head->tail)
   const flagSkins = [
-    {id:'saudi', name:'السعودية', emoji:'🇸🇦', stripes:['#0b7a3f','#ffffff']},
-    {id:'uae', name:'الإمارات', emoji:'🇦🇪', stripes:['#ce1126','#00732f','#ffffff','#111111']},
-    {id:'egypt', name:'مصر', emoji:'🇪🇬', stripes:['#c8102e','#ffffff','#111111']},
-    {id:'kuwait', name:'الكويت', emoji:'🇰🇼', stripes:['#007a3d','#ffffff','#ce1126','#111111']},
-    {id:'jordan', name:'الأردن', emoji:'🇯🇴', stripes:['#111111','#ffffff','#007a3d']},
-    {id:'usa', name:'أمريكا', emoji:'🇺🇸', stripes:['#3c3b6e','#ffffff','#b22234']},
-    {id:'japan', name:'اليابان', emoji:'🇯🇵', stripes:['#ffffff','#bc002d']},
-    {id:'brazil', name:'البرازيل', emoji:'🇧🇷', stripes:['#009c3b','#ffdf00','#002776']}
+    // الخليج والشام
+    {id:'saudi',   name:'السعودية',    emoji:'🇸🇦', stripes:['#0b7a3f','#ffffff']},
+    {id:'uae',     name:'الإمارات',     emoji:'🇦🇪', stripes:['#ce1126','#00732f','#ffffff','#111111']},
+    {id:'kuwait',  name:'الكويت',       emoji:'🇰🇼', stripes:['#007a3d','#ffffff','#ce1126','#111111']},
+    {id:'qatar',   name:'قطر',          emoji:'🇶🇦', stripes:['#8a1538','#ffffff']},
+    {id:'bahrain', name:'البحرين',      emoji:'🇧🇭', stripes:['#ce1126','#ffffff']},
+    {id:'oman',    name:'عُمان',         emoji:'🇴🇲', stripes:['#c8102e','#ffffff','#008000']},
+    {id:'yemen',   name:'اليمن',        emoji:'🇾🇪', stripes:['#ce1126','#ffffff','#111111']},
+    {id:'jordan',  name:'الأردن',       emoji:'🇯🇴', stripes:['#111111','#ffffff','#007a3d']},
+    {id:'syria',   name:'سوريا',        emoji:'🇸🇾', stripes:['#111111','#ffffff','#007a3d']},
+    {id:'lebanon', name:'لبنان',        emoji:'🇱🇧', stripes:['#ce1126','#ffffff']},
+    {id:'palestine',name:'فلسطين',      emoji:'🇵🇸', stripes:['#111111','#ffffff','#007a3d','#ce1126']},
+    {id:'iraq',    name:'العراق',       emoji:'🇮🇶', stripes:['#ce1126','#ffffff','#111111']},
+    // شمال أفريقيا
+    {id:'egypt',   name:'مصر',          emoji:'🇪🇬', stripes:['#c8102e','#ffffff','#111111']},
+    {id:'morocco', name:'المغرب',       emoji:'🇲🇦', stripes:['#c1272d','#006233']},
+    {id:'algeria', name:'الجزائر',      emoji:'🇩🇿', stripes:['#006233','#ffffff','#d21034']},
+    {id:'tunisia', name:'تونس',         emoji:'🇹🇳', stripes:['#e70013','#ffffff']},
+    {id:'libya',   name:'ليبيا',        emoji:'🇱🇾', stripes:['#e70013','#111111','#007a3d']},
+    {id:'sudan',   name:'السودان',      emoji:'🇸🇩', stripes:['#d21034','#ffffff','#111111']},
+    // أفريقيا جنوب الصحراء
+    {id:'nigeria', name:'نيجيريا',      emoji:'🇳🇬', stripes:['#008751','#ffffff','#008751']},
+    {id:'ghana',   name:'غانا',         emoji:'🇬🇭', stripes:['#ce1126','#fcd116','#006b3f']},
+    {id:'kenya',   name:'كينيا',        emoji:'🇰🇪', stripes:['#111111','#ce1126','#006600']},
+    {id:'ethiopia',name:'إثيوبيا',      emoji:'🇪🇹', stripes:['#078930','#fcdd09','#da121a']},
+    {id:'southafrica',name:'جنوب أفريقيا',emoji:'🇿🇦', stripes:['#007a4d','#ffb612','#001489']},
+    {id:'senegal', name:'السنغال',      emoji:'🇸🇳', stripes:['#00853f','#fdef42','#e31b23']},
+    // أوروبا
+    {id:'italy',   name:'إيطاليا',      emoji:'🇮🇹', stripes:['#009246','#ffffff','#ce2b37']},
+    {id:'germany', name:'ألمانيا',      emoji:'🇩🇪', stripes:['#111111','#d00000','#ffce00']},
+    {id:'spain',   name:'إسبانيا',      emoji:'🇪🇸', stripes:['#aa151b','#f1bf00']},
+    {id:'france',  name:'فرنسا',        emoji:'🇫🇷', stripes:['#0055a4','#ffffff','#ef4135']},
+    {id:'uk',      name:'بريطانيا',     emoji:'🇬🇧', stripes:['#012169','#ffffff','#c8102e']},
+    {id:'portugal',name:'البرتغال',     emoji:'🇵🇹', stripes:['#006600','#ff0000']},
+    {id:'netherlands',name:'هولندا',    emoji:'🇳🇱', stripes:['#ae1c28','#ffffff','#21468b']},
+    {id:'belgium', name:'بلجيكا',       emoji:'🇧🇪', stripes:['#111111','#fae042','#ed2939']},
+    {id:'sweden',  name:'السويد',       emoji:'🇸🇪', stripes:['#005293','#fecc00']},
+    {id:'norway',  name:'النرويج',      emoji:'🇳🇴', stripes:['#ba0c2f','#ffffff','#00205b']},
+    {id:'poland',  name:'بولندا',       emoji:'🇵🇱', stripes:['#ffffff','#dc143c']},
+    {id:'greece',  name:'اليونان',      emoji:'🇬🇷', stripes:['#0d5eaf','#ffffff']},
+    {id:'switzerland',name:'سويسرا',    emoji:'🇨🇭', stripes:['#d52b1e','#ffffff']},
+    {id:'austria', name:'النمسا',       emoji:'🇦🇹', stripes:['#ed2939','#ffffff']},
+    {id:'ireland', name:'أيرلندا',      emoji:'🇮🇪', stripes:['#169b62','#ffffff','#ff883e']},
+    {id:'ukraine', name:'أوكرانيا',     emoji:'🇺🇦', stripes:['#0057b7','#ffd700']},
+    {id:'russia',  name:'روسيا',        emoji:'🇷🇺', stripes:['#ffffff','#0039a6','#d52b1e']},
+    {id:'turkey',  name:'تركيا',        emoji:'🇹🇷', stripes:['#e30a17','#ffffff']},
+    // آسيا
+    {id:'japan',   name:'اليابان',      emoji:'🇯🇵', stripes:['#ffffff','#bc002d']},
+    {id:'china',   name:'الصين',        emoji:'🇨🇳', stripes:['#de2910','#ffde00']},
+    {id:'southkorea',name:'كوريا الجنوبية',emoji:'🇰🇷', stripes:['#ffffff','#cd2e3a','#0047a0']},
+    {id:'india',   name:'الهند',        emoji:'🇮🇳', stripes:['#ff9933','#ffffff','#138808']},
+    {id:'pakistan',name:'باكستان',      emoji:'🇵🇰', stripes:['#01411c','#ffffff']},
+    {id:'indonesia',name:'إندونيسيا',   emoji:'🇮🇩', stripes:['#ff0000','#ffffff']},
+    {id:'malaysia',name:'ماليزيا',      emoji:'🇲🇾', stripes:['#010066','#ffffff','#cc0001','#ffcc00']},
+    {id:'thailand',name:'تايلاند',      emoji:'🇹🇭', stripes:['#a51931','#ffffff','#2d2a4a']},
+    {id:'vietnam', name:'فيتنام',       emoji:'🇻🇳', stripes:['#da251d','#ffff00']},
+    {id:'philippines',name:'الفلبين',   emoji:'🇵🇭', stripes:['#0038a8','#ce1126','#ffffff']},
+    // أمريكا
+    {id:'usa',     name:'أمريكا',       emoji:'🇺🇸', stripes:['#3c3b6e','#ffffff','#b22234']},
+    {id:'canada',  name:'كندا',         emoji:'🇨🇦', stripes:['#ff0000','#ffffff']},
+    {id:'mexico',  name:'المكسيك',      emoji:'🇲🇽', stripes:['#006847','#ffffff','#ce1126']},
+    {id:'brazil',  name:'البرازيل',     emoji:'🇧🇷', stripes:['#009c3b','#ffdf00','#002776']},
+    {id:'argentina',name:'الأرجنتين',   emoji:'🇦🇷', stripes:['#74acdf','#ffffff']},
+    {id:'colombia',name:'كولومبيا',     emoji:'🇨🇴', stripes:['#fcd116','#003893','#ce1126']},
+    {id:'chile',   name:'تشيلي',        emoji:'🇨🇱', stripes:['#ffffff','#d52b1e','#0039a6']},
+    {id:'peru',    name:'بيرو',         emoji:'🇵🇪', stripes:['#d91023','#ffffff']},
+    // أوقيانوسيا
+    {id:'australia',name:'أستراليا',    emoji:'🇦🇺', stripes:['#00008b','#ffffff','#ff0000']},
+    {id:'newzealand',name:'نيوزيلندا',  emoji:'🇳🇿', stripes:['#00247d','#ffffff','#cc142b']},
+    // مزيد من الخليج وآسيا الوسطى
+    {id:'afghanistan',name:'أفغانستان', emoji:'🇦🇫', stripes:['#111111','#ce1126','#009543']},
+    {id:'iran',    name:'إيران',        emoji:'🇮🇷', stripes:['#239f40','#ffffff','#da0000']},
+    {id:'azerbaijan',name:'أذربيجان',   emoji:'🇦🇿', stripes:['#00b5e2','#e4002b','#009639']},
+    {id:'kazakhstan',name:'كازاخستان',  emoji:'🇰🇿', stripes:['#00afca','#ffec00']},
+    {id:'uzbekistan',name:'أوزبكستان',  emoji:'🇺🇿', stripes:['#0099b5','#ffffff','#1eb53a']},
+    // مزيد من أفريقيا
+    {id:'mauritania',name:'موريتانيا',  emoji:'🇲🇷', stripes:['#00a35c','#ffc400']},
+    {id:'somalia', name:'الصومال',      emoji:'🇸🇴', stripes:['#4189dd','#ffffff']},
+    {id:'djibouti',name:'جيبوتي',       emoji:'🇩🇯', stripes:['#6ab2e7','#12ad2b','#ffffff']},
+    {id:'comoros', name:'جزر القمر',    emoji:'🇰🇲', stripes:['#ffd700','#ffffff','#009000','#e8112d']},
+    {id:'tanzania',name:'تنزانيا',      emoji:'🇹🇿', stripes:['#1eb53a','#fcd116','#00a3dd']},
+    {id:'uganda',  name:'أوغندا',       emoji:'🇺🇬', stripes:['#000000','#fcdc04','#d90000']},
+    {id:'ivorycoast',name:'ساحل العاج', emoji:'🇨🇮', stripes:['#f77f00','#ffffff','#009e60']},
+    {id:'cameroon',name:'الكاميرون',    emoji:'🇨🇲', stripes:['#007a5e','#ce1126','#fcd116']},
+    {id:'zimbabwe',name:'زيمبابوي',     emoji:'🇿🇼', stripes:['#319208','#ffd200','#d40000','#000000']},
+    {id:'zambia',  name:'زامبيا',       emoji:'🇿🇲', stripes:['#198a00','#de2010','#000000','#ef7d00']},
+    // مزيد من أوروبا
+    {id:'denmark', name:'الدنمارك',     emoji:'🇩🇰', stripes:['#c8102e','#ffffff']},
+    {id:'finland', name:'فنلندا',       emoji:'🇫🇮', stripes:['#ffffff','#003580']},
+    {id:'iceland', name:'آيسلندا',      emoji:'🇮🇸', stripes:['#02529c','#ffffff','#dc1e35']},
+    {id:'romania', name:'رومانيا',      emoji:'🇷🇴', stripes:['#002b7f','#fcd116','#ce1126']},
+    {id:'hungary', name:'المجر',        emoji:'🇭🇺', stripes:['#ce2939','#ffffff','#477050']},
+    {id:'czechia', name:'التشيك',       emoji:'🇨🇿', stripes:['#11457e','#ffffff','#d7141a']},
+    {id:'serbia',  name:'صربيا',        emoji:'🇷🇸', stripes:['#c6363c','#0c4076','#ffffff']},
+    {id:'croatia', name:'كرواتيا',      emoji:'🇭🇷', stripes:['#ff0000','#ffffff','#171796']},
+    {id:'bulgaria',name:'بلغاريا',      emoji:'🇧🇬', stripes:['#ffffff','#00966e','#d62612']},
+    {id:'albania', name:'ألبانيا',      emoji:'🇦🇱', stripes:['#e41e20','#000000']},
+    {id:'georgia', name:'جورجيا',       emoji:'🇬🇪', stripes:['#ffffff','#ff0000']},
+    // مزيد من آسيا وشرق آسيا
+    {id:'bangladesh',name:'بنغلاديش',   emoji:'🇧🇩', stripes:['#006a4e','#f42a41']},
+    {id:'srilanka',name:'سريلانكا',     emoji:'🇱🇰', stripes:['#ffb700','#8d153a','#00534e']},
+    {id:'nepal',   name:'نيبال',        emoji:'🇳🇵', stripes:['#dc143c','#003893']},
+    {id:'myanmar', name:'ميانمار',      emoji:'🇲🇲', stripes:['#fecb00','#34b233','#ea2839']},
+    {id:'cambodia',name:'كمبوديا',      emoji:'🇰🇭', stripes:['#032ea1','#e00025']},
+    {id:'singapore',name:'سنغافورة',    emoji:'🇸🇬', stripes:['#ed2939','#ffffff']},
+    {id:'mongolia',name:'منغوليا',      emoji:'🇲🇳', stripes:['#c4272f','#015197']},
+    // مزيد من الأمريكتين
+    {id:'cuba',    name:'كوبا',         emoji:'🇨🇺', stripes:['#002a8f','#ffffff','#cf142b']},
+    {id:'venezuela',name:'فنزويلا',     emoji:'🇻🇪', stripes:['#fcd116','#00247d','#cf142b']},
+    {id:'ecuador', name:'الإكوادور',    emoji:'🇪🇨', stripes:['#ffd100','#0072ce','#ef3340']},
+    {id:'bolivia', name:'بوليفيا',      emoji:'🇧🇴', stripes:['#da291c','#f9e300','#007934']},
+    {id:'uruguay', name:'الأوروغواي',   emoji:'🇺🇾', stripes:['#ffffff','#0038a8','#fcd116']},
+    {id:'paraguay',name:'باراغواي',     emoji:'🇵🇾', stripes:['#d52b1e','#ffffff','#0038a8']},
+    {id:'costarica',name:'كوستاريكا',   emoji:'🇨🇷', stripes:['#002b7f','#ffffff','#ce1126']},
+    {id:'panama',  name:'بنما',         emoji:'🇵🇦', stripes:['#ffffff','#da121a','#072357']},
+    {id:'jamaica', name:'جامايكا',      emoji:'🇯🇲', stripes:['#009b3a','#fed100','#000000']},
+    // أوقيانوسيا إضافية
+    {id:'fiji',    name:'فيجي',         emoji:'🇫🇯', stripes:['#68bfe5','#ffffff','#cf142b']},
+    {id:'papuanewguinea',name:'بابوا غينيا الجديدة',emoji:'🇵🇬', stripes:['#000000','#ce1126','#fcd116']}
   ];
+
   flagSkins.forEach(f=>{ f.c = f.stripes[0]; });
-  const patterns = ['صلب','مخطط','منقط'];
+
+  const skinColors = [...solidColors, ...flagSkins];
+
+  const patterns = ['صلب','مخطط','منقط','متدرج','متلألئ'];
+
+  const palette = skinColors.map(s=>s.c);
+
+  let food = [];
+  let worms = [];
+  let player = null;
+  let camera = {x:0,y:0,zoom:1};
+  let running = false;
+  let animId = null;
+  let playerLives = 0;
 
   let chosenSkin = solidColors[0];
   let chosenPattern = 'صلب';
+  let chosenFace = 'عادي';
 
-  // ---- picker UI ----
+  function rand(a,b){ return a + Math.random()*(b-a); }
+  function dist2(a,b){ const dx=a.x-b.x, dy=a.y-b.y; return dx*dx+dy*dy; }
+
+  // ---- Food types ----
+  // type: fruit (common, +2 growth), candy (+5 growth, faster), bonus (+18 instant), heart (extra life)
+  const fruitShapes = ['grape','cherry','orange','banana','apple','watermelon'];
+
+  function makeFoodItem(x,y){
+    const r = Math.random();
+    if(r < SPECIAL_CHANCE.mult16){
+      return {x,y,type:'mult', value:16, r:11, pulse:Math.random()*10};
+    }
+    if(r < SPECIAL_CHANCE.mult16+SPECIAL_CHANCE.mult8){
+      return {x,y,type:'mult', value:8, r:10, pulse:Math.random()*10};
+    }
+    if(r < SPECIAL_CHANCE.mult16+SPECIAL_CHANCE.mult8+SPECIAL_CHANCE.mult4){
+      return {x,y,type:'mult', value:4, r:9, pulse:Math.random()*10};
+    }
+    if(r < SPECIAL_CHANCE.mult16+SPECIAL_CHANCE.mult8+SPECIAL_CHANCE.mult4+SPECIAL_CHANCE.mult2){
+      return {x,y,type:'mult', value:2, r:8, pulse:Math.random()*10};
+    }
+    const base = SPECIAL_CHANCE.mult16+SPECIAL_CHANCE.mult8+SPECIAL_CHANCE.mult4+SPECIAL_CHANCE.mult2;
+    if(r < base+SPECIAL_CHANCE.heart){
+      return {x,y,type:'heart', r:12, pulse:Math.random()*10};
+    }
+    if(r < base+SPECIAL_CHANCE.heart+SPECIAL_CHANCE.bonus){
+      return {x,y,type:'bonus', r:13, pulse:Math.random()*10};
+    }
+    if(r < base+SPECIAL_CHANCE.heart+SPECIAL_CHANCE.bonus+SPECIAL_CHANCE.bigcandy){
+      return {x,y,type:'bigcandy', r:16, color: ['#ff5f8f','#5fd8ff','#ffe45f','#c48fff'][Math.floor(Math.random()*4)], pulse:Math.random()*10};
+    }
+    if(r < base+SPECIAL_CHANCE.heart+SPECIAL_CHANCE.bonus+SPECIAL_CHANCE.bigcandy+SPECIAL_CHANCE.candy){
+      return {x,y,type:'candy', r:8, color: ['#ff5f8f','#5fd8ff','#ffe45f'][Math.floor(Math.random()*3)], pulse:Math.random()*10};
+    }
+    return {
+      x,y,type:'fruit',
+      shape: fruitShapes[Math.floor(Math.random()*fruitShapes.length)],
+      r: rand(10,13),
+      rot: Math.random()*Math.PI*2
+    };
+  }
+
+  function spawnFood(n){
+    for(let i=0;i<n;i++){
+      const ang = Math.random()*Math.PI*2;
+      const r = Math.sqrt(Math.random())*WORLD_R*0.97;
+      food.push(makeFoodItem(Math.cos(ang)*r, Math.sin(ang)*r));
+    }
+  }
+
+  // ================= MULTIPLAYER STATE =================
+  const SERVER_URL = 'https://worm-game-server-production.up.railway.app';
+
+  let worldState = { worms: [], food: [], worldRadius: WORLD_R };
+  let myId = null;
+  let playing = false;
+  let cachedMe = null;
+
+  function findMe(){ return cachedMe; }
+  function wormLength(w){ return w ? w.segs.length : 0; }
+
+  const socket = io(SERVER_URL, { transports: ['websocket','polling'] });
+  const connStatus = document.getElementById('connStatus');
+  const playBtn = document.getElementById('playBtn');
+
+  playBtn.disabled = true;
+
+  socket.on('connect', ()=>{
+    connStatus.textContent = 'متصل بالسيرفر';
+    connStatus.className = 'conn-status online';
+    playBtn.disabled = false;
+  });
+  socket.on('disconnect', ()=>{
+    connStatus.textContent = 'انقطع الاتصال...';
+    connStatus.className = 'conn-status offline';
+    playBtn.disabled = true;
+  });
+  socket.on('connect_error', ()=>{
+    connStatus.textContent = 'تعذر الاتصال بالسيرفر';
+    connStatus.className = 'conn-status offline';
+    playBtn.disabled = true;
+  });
+
+  socket.on('joined', (data)=>{
+    myId = data.id;
+    worldState.worldRadius = data.worldRadius;
+    playing = true;
+    running = true;
+    playerLives = 0;
+    renderLives();
+    document.getElementById('multRow').style.display = 'none';
+    document.getElementById('startScreen').classList.add('hidden');
+    document.getElementById('endScreen').classList.add('hidden');
+  });
+
+  socket.on('state', (data)=>{
+    worldState = data;
+    cachedMe = data.worms.find(w=>w.id===myId) || null;
+    document.getElementById('onlineCount').textContent = data.worms.length;
+    if(playing) updateHudFromServer();
+  });
+
+  socket.on('youDied', (data)=>{
+    playing = false;
+    running = false;
+    document.getElementById('finalScore').textContent = data.finalLength;
+    document.getElementById('killedBy').textContent = 'انتهت جولتك';
+    document.getElementById('endScreen').classList.remove('hidden');
+  });
+
+  socket.on('youRespawned', (data)=>{
+    playerLives = data.livesLeft;
+    renderLives();
+    showBoostPopup('نجوت! حياة -1', '#ff6b6b');
+  });
+
+  function renderLives(){
+    const row = document.getElementById('livesRow');
+    row.innerHTML = '';
+    for(let i=0;i<playerLives;i++){
+      const s = document.createElement('span');
+      s.textContent = '❤️';
+      row.appendChild(s);
+    }
+  }
+
+  function showBoostPopup(text, color){
+    const el = document.getElementById('boostPopup');
+    el.textContent = text;
+    el.style.color = color;
+    el.style.opacity = '1';
+    el.style.transform = 'translate(-50%,-50%) scale(1.15)';
+    clearTimeout(el._t);
+    el._t = setTimeout(()=>{
+      el.style.opacity = '0';
+      el.style.transform = 'translate(-50%,-50%) scale(1)';
+    }, 550);
+  }
+
+  function updateHudFromServer(){
+    const me = findMe();
+    if(me){
+      document.getElementById('scoreVal').textContent = wormLength(me);
+      const multRow = document.getElementById('multRow');
+      if(me.multTimeLeft > 0){
+        multRow.style.display = 'block';
+        document.getElementById('multVal').textContent = me.multiplier;
+        document.getElementById('multTimer').textContent = me.multTimeLeft + 'ث';
+      } else {
+        multRow.style.display = 'none';
+      }
+    }
+    const ranked = [...worldState.worms].sort((a,b)=>wormLength(b)-wormLength(a)).slice(0,5);
+    document.getElementById('lbList').innerHTML = ranked.map((w,i)=>`
+      <div class="lb-row ${w.id===myId?'me':''}">
+        <span>${i+1}. ${w.name}</span><span class="n">${wormLength(w)}</span>
+      </div>
+    `).join('');
+  }
+
+  function drawMinimap(){
+    mctx.clearRect(0,0,100,100);
+    mctx.fillStyle = 'rgba(255,255,255,0.05)';
+    mctx.beginPath();
+    mctx.arc(50,50,48,0,Math.PI*2);
+    mctx.fill();
+    const scale = 48/worldState.worldRadius;
+    for(const w of worldState.worms){
+      const h = w.segs[0];
+      if(!h) continue;
+      mctx.fillStyle = w.id===myId ? '#8fffb0' : 'rgba(255,255,255,0.4)';
+      mctx.beginPath();
+      mctx.arc(50+h.x*scale, 50+h.y*scale, w.id===myId?3:1.6, 0, Math.PI*2);
+      mctx.fill();
+    }
+  }
+
+  // ---- input: steer + boost, sent to the server; server owns all physics ----
+  let pointer = {x:0,y:0,active:false};
+  let boosting = false;
+  canvas.addEventListener('mousemove', e=>{ pointer.x=e.clientX; pointer.y=e.clientY; pointer.active=true; });
+  canvas.addEventListener('touchmove', e=>{
+    const t=e.touches[0]; pointer.x=t.clientX; pointer.y=t.clientY; pointer.active=true; e.preventDefault();
+  }, {passive:false});
+  canvas.addEventListener('touchstart', e=>{
+    const t=e.touches[0]; pointer.x=t.clientX; pointer.y=t.clientY; pointer.active=true; e.preventDefault();
+  }, {passive:false});
+  let touchHoldTimer = null;
+  canvas.addEventListener('touchstart', ()=>{
+    clearTimeout(touchHoldTimer);
+    touchHoldTimer = setTimeout(()=>{ boosting = true; }, 250);
+  });
+  canvas.addEventListener('touchend', ()=>{ clearTimeout(touchHoldTimer); boosting=false; });
+  window.addEventListener('mousedown', ()=>{ boosting=true; });
+  window.addEventListener('mouseup', ()=>{ boosting=false; });
+
+  setInterval(()=>{
+    if(!playing) return;
+    if(!pointer.active){ socket.emit('input', { angle:null, boosting:false }); return; }
+    const dx = pointer.x - W/2, dy = pointer.y - H/2;
+    if(Math.abs(dx)>4 || Math.abs(dy)>4){
+      socket.emit('input', { angle: Math.atan2(dy,dx), boosting });
+    }
+  }, 50);
+
+  function startGame(){
+    resize();
+    const name = (document.getElementById('nameInput').value || 'أنا').trim().slice(0,12) || 'أنا';
+    socket.emit('join', { name, skin: chosenSkin, pattern: chosenPattern, face: chosenFace });
+  }
+
+  function draw(ts){
+    ctx.fillStyle = '#0e1520';
+    ctx.fillRect(0,0,W,H);
+
+    const me = findMe();
+    const camX = me ? me.segs[0].x : camera.x;
+    const camY = me ? me.segs[0].y : camera.y;
+    camera.x = camX; camera.y = camY;
+
+    ctx.save();
+    ctx.translate(W/2 - camX, H/2 - camY);
+
+    ctx.strokeStyle = 'rgba(255,95,95,0.35)';
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.arc(0,0,worldState.worldRadius,0,Math.PI*2);
+    ctx.stroke();
+
+    ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+    ctx.lineWidth = 1;
+    const gridSize = 60;
+    const left = camX - W, right = camX + W, top = camY - H, bottom = camY + H;
+    for(let gx = Math.floor(left/gridSize)*gridSize; gx<right; gx+=gridSize){
+      ctx.beginPath(); ctx.moveTo(gx,top); ctx.lineTo(gx,bottom); ctx.stroke();
+    }
+    for(let gy = Math.floor(top/gridSize)*gridSize; gy<bottom; gy+=gridSize){
+      ctx.beginPath(); ctx.moveTo(left,gy); ctx.lineTo(right,gy); ctx.stroke();
+    }
+
+    // viewport culling: only draw what's actually near the visible screen —
+    // the world holds far more food/players than fit on one screen at once
+    for(const f of worldState.food){
+      if(f.x<left-20||f.x>right+20||f.y<top-20||f.y>bottom+20) continue;
+      drawFoodItem(f, ts);
+    }
+
+    for(const w of worldState.worms){
+      const h = w.segs[0];
+      if(!h) continue;
+      const reach = 400 + w.thickness*4;
+      if(h.x<left-reach||h.x>right+reach||h.y<top-reach||h.y>bottom+reach) continue;
+      w.isPlayer = (w.id === myId); // reuse the existing drawWorm() label logic
+      drawWorm(w);
+    }
+
+    ctx.restore();
+  }
+
+  function drawFruitShape(shape, r){
+    if(shape === 'grape'){
+      // cluster of small purple circles
+      ctx.fillStyle = '#8b5fd6';
+      const offsets = [[0,-r*0.5],[-r*0.5,0],[r*0.5,0],[-r*0.3,r*0.55],[r*0.3,r*0.55],[0,r*1.05]];
+      offsets.forEach(([ox,oy])=>{
+        ctx.beginPath();
+        ctx.arc(ox,oy,r*0.42,0,Math.PI*2);
+        ctx.fill();
+      });
+      ctx.strokeStyle = '#4a7c3f'; ctx.lineWidth = 1.4;
+      ctx.beginPath(); ctx.moveTo(0,-r*0.5); ctx.lineTo(0,-r*1.15); ctx.stroke();
+    } else if(shape === 'cherry'){
+      ctx.fillStyle = '#d62839';
+      ctx.beginPath(); ctx.arc(-r*0.4,r*0.25,r*0.6,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(r*0.4,r*0.4,r*0.6,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle = '#4a7c3f'; ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.moveTo(-r*0.4,r*0.25-r*0.5); ctx.quadraticCurveTo(-r*0.1,-r*0.9,0,-r*1.1);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(r*0.4,r*0.4-r*0.5); ctx.quadraticCurveTo(r*0.15,-r*0.7,0,-r*1.1);
+      ctx.stroke();
+    } else if(shape === 'orange'){
+      ctx.fillStyle = '#ff9f1c';
+      ctx.beginPath(); ctx.arc(0,0,r,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.lineWidth = 1;
+      for(let a=0;a<Math.PI*2;a+=Math.PI/4){
+        ctx.beginPath();
+        ctx.moveTo(0,0);
+        ctx.lineTo(Math.cos(a)*r, Math.sin(a)*r);
+        ctx.stroke();
+      }
+      ctx.fillStyle = '#3f7d3a';
+      ctx.beginPath(); ctx.ellipse(0,-r*1.05,r*0.22,r*0.13,0.4,0,Math.PI*2); ctx.fill();
+    } else if(shape === 'banana'){
+      ctx.strokeStyle = '#ffd23f';
+      ctx.lineWidth = r*0.85;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(-r*1.1,r*0.5);
+      ctx.quadraticCurveTo(0,-r*1.1, r*1.1,r*0.1);
+      ctx.stroke();
+      ctx.strokeStyle = '#8a6a1f'; ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(-r*1.1,r*0.5);
+      ctx.quadraticCurveTo(0,-r*1.1, r*1.1,r*0.1);
+      ctx.stroke();
+    } else if(shape === 'apple'){
+      ctx.fillStyle = '#e63946';
+      ctx.beginPath();
+      ctx.arc(-r*0.35,0,r*0.68,0,Math.PI*2); ctx.fill();
+      ctx.beginPath();
+      ctx.arc(r*0.35,0,r*0.68,0,Math.PI*2); ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(-r*0.9,r*0.05); ctx.lineTo(r*0.9,r*0.05);
+      ctx.lineTo(r*0.5,r*0.95); ctx.lineTo(-r*0.5,r*0.95);
+      ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = '#5a3a1a'; ctx.lineWidth = 1.6;
+      ctx.beginPath(); ctx.moveTo(0,-r*0.55); ctx.lineTo(r*0.15,-r*1.15); ctx.stroke();
+      ctx.fillStyle = '#4a9c3f';
+      ctx.beginPath(); ctx.ellipse(r*0.4,-r*0.95,r*0.28,r*0.15,-0.5,0,Math.PI*2); ctx.fill();
+    } else if(shape === 'watermelon'){
+      ctx.fillStyle = '#ff5f7a';
+      ctx.beginPath();
+      ctx.arc(0,0,r,Math.PI*0.05,Math.PI*0.95,false);
+      ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#2f9e44';
+      ctx.beginPath();
+      ctx.arc(0,0,r,Math.PI*0.02,Math.PI*0.98,false);
+      ctx.arc(0,0,r*0.88,Math.PI*0.98,Math.PI*0.02,true);
+      ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#ff5f7a';
+      ctx.beginPath();
+      ctx.arc(0,0,r*0.82,Math.PI*0.08,Math.PI*0.92,false);
+      ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#1a1a1a';
+      [[-r*0.35,r*0.3],[0,r*0.55],[r*0.35,r*0.3]].forEach(([sx,sy])=>{
+        ctx.beginPath(); ctx.ellipse(sx,sy,r*0.06,r*0.1,0,0,Math.PI*2); ctx.fill();
+      });
+    }
+  }
+
+  function drawFoodItem(f, ts){
+    const pulse = f.pulse !== undefined ? Math.sin((ts||0)/220 + f.pulse)*0.15+1 : 1;
+
+    if(f.type === 'fruit'){
+      ctx.save();
+      ctx.translate(f.x,f.y);
+      ctx.rotate(f.rot||0);
+      drawFruitShape(f.shape, f.r);
+      ctx.restore();
+    } else if(f.type === 'candy'){
+      ctx.save();
+      ctx.translate(f.x,f.y);
+      ctx.scale(pulse,pulse);
+      ctx.fillStyle = f.color;
+      ctx.beginPath();
+      ctx.moveTo(-f.r,-f.r*0.6); ctx.lineTo(-f.r*0.3,0); ctx.lineTo(-f.r,f.r*0.6);
+      ctx.lineTo(f.r,f.r*0.6); ctx.lineTo(f.r*0.3,0); ctx.lineTo(f.r,-f.r*0.6);
+      ctx.closePath(); ctx.fill();
+      ctx.restore();
+    } else if(f.type === 'bigcandy'){
+      ctx.save();
+      ctx.translate(f.x,f.y);
+      ctx.scale(pulse,pulse);
+      ctx.shadowColor = f.color; ctx.shadowBlur = 16;
+      ctx.fillStyle = f.color;
+      // round candy body
+      ctx.beginPath();
+      ctx.arc(0,0,f.r*0.62,0,Math.PI*2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      // twisted wrapper ends
+      ctx.beginPath();
+      ctx.moveTo(-f.r*0.55,-f.r*0.35); ctx.lineTo(-f.r*1.05,-f.r*0.7); ctx.lineTo(-f.r*1.05,0);
+      ctx.closePath(); ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(f.r*0.55,f.r*0.35); ctx.lineTo(f.r*1.05,f.r*0.7); ctx.lineTo(f.r*1.05,0);
+      ctx.closePath(); ctx.fill();
+      // spiral stripe
+      ctx.strokeStyle = 'rgba(255,255,255,0.55)'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(0,0,f.r*0.36,0.4,3.6); ctx.stroke();
+      ctx.restore();
+    } else if(f.type === 'bonus'){
+      ctx.save();
+      ctx.translate(f.x,f.y);
+      ctx.scale(pulse,pulse);
+      ctx.fillStyle = '#ffe45f';
+      ctx.shadowColor = '#ffe45f'; ctx.shadowBlur = 12;
+      ctx.beginPath();
+      ctx.moveTo(-2,-f.r); ctx.lineTo(4,-2); ctx.lineTo(-1,-1);
+      ctx.lineTo(3,f.r); ctx.lineTo(-4,2); ctx.lineTo(1,1);
+      ctx.closePath(); ctx.fill();
+      ctx.restore();
+    } else if(f.type === 'heart'){
+      ctx.save();
+      ctx.translate(f.x,f.y);
+      ctx.scale(pulse,pulse);
+      ctx.fillStyle = '#ff5f7a';
+      ctx.shadowColor = '#ff5f7a'; ctx.shadowBlur = 10;
+      const r = f.r*0.5;
+      ctx.beginPath();
+      ctx.moveTo(0,r*0.6);
+      ctx.bezierCurveTo(-r*1.6,-r*0.6, -r*0.3,-r*1.6, 0,-r*0.3);
+      ctx.bezierCurveTo(r*0.3,-r*1.6, r*1.6,-r*0.6, 0,r*0.6);
+      ctx.fill();
+      ctx.restore();
+    } else if(f.type === 'mult'){
+      const colorByVal = {2:'#8fffb0', 4:'#5fd8ff', 8:'#ffe45f', 16:'#ff5f5f'};
+      const col = colorByVal[f.value] || '#8fffb0';
+      ctx.save();
+      ctx.translate(f.x,f.y);
+      ctx.scale(pulse,pulse);
+      ctx.shadowColor = col; ctx.shadowBlur = f.value >= 8 ? 12 : 7;
+      ctx.fillStyle = col;
+      // hexagon badge
+      ctx.beginPath();
+      for(let a=0;a<6;a++){
+        const ang = Math.PI/3*a - Math.PI/2;
+        const px = Math.cos(ang)*f.r, py = Math.sin(ang)*f.r;
+        a===0 ? ctx.moveTo(px,py) : ctx.lineTo(px,py);
+      }
+      ctx.closePath(); ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = '#0b1410';
+      ctx.font = `bold ${Math.round(f.r*0.85)}px sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('×'+f.value, 0, 1);
+      ctx.restore();
+    }
+  }
+
+  const faceStyles = ['عادي','لطيف','غاضب','روبوت','نجوم','كرتوني'];
+
+  function drawFace(w, head){
+    const face = w.face || 'عادي';
+    const ex = Math.cos(w.dir), ey = Math.sin(w.dir);
+    const px = -ey, py = ex;
+    const t = w.thickness;
+
+    if(face === 'لطيف'){
+      // big round eyes with small pupils looking forward, blush cheeks
+      ctx.fillStyle = '#0b1410';
+      [1,-1].forEach(side=>{
+        const ox = head.x + ex*t*0.32 + px*side*t*0.34;
+        const oy = head.y + ey*t*0.32 + py*side*t*0.34;
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath(); ctx.arc(ox,oy,t*0.2,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#0b1410';
+        ctx.beginPath(); ctx.arc(ox+ex*t*0.06,oy+ey*t*0.06,t*0.11,0,Math.PI*2); ctx.fill();
+      });
+      ctx.fillStyle = 'rgba(255,120,140,0.5)';
+      [1,-1].forEach(side=>{
+        const cx = head.x - ex*t*0.05 + px*side*t*0.55;
+        const cy = head.y - ey*t*0.05 + py*side*t*0.55;
+        ctx.beginPath(); ctx.arc(cx,cy,t*0.14,0,Math.PI*2); ctx.fill();
+      });
+    } else if(face === 'غاضب'){
+      // angled angry eyebrows + narrow eyes
+      ctx.strokeStyle = '#0b1410';
+      ctx.lineWidth = Math.max(1.5, t*0.14);
+      ctx.lineCap = 'round';
+      [1,-1].forEach(side=>{
+        const ox = head.x + ex*t*0.3 + px*side*t*0.34;
+        const oy = head.y + ey*t*0.3 + py*side*t*0.34;
+        const bx = px*side*t*0.22, by2 = py*side*t*0.22;
+        ctx.beginPath();
+        ctx.moveTo(ox-bx*0.6-ex*t*0.05, oy-by2*0.6-ey*t*0.05);
+        ctx.lineTo(ox+bx*0.6, oy+by2*0.6);
+        ctx.stroke();
+      });
+      ctx.fillStyle = '#0b1410';
+      [1,-1].forEach(side=>{
+        const ox = head.x + ex*t*0.36 + px*side*t*0.3;
+        const oy = head.y + ey*t*0.36 + py*side*t*0.3;
+        ctx.beginPath(); ctx.arc(ox,oy,t*0.1,0,Math.PI*2); ctx.fill();
+      });
+    } else if(face === 'روبوت'){
+      // rectangular visor with a scan line
+      ctx.save();
+      ctx.translate(head.x, head.y);
+      ctx.rotate(w.dir);
+      ctx.fillStyle = '#0b1410';
+      ctx.fillRect(-t*0.1, -t*0.42, t*0.62, t*0.84);
+      ctx.fillStyle = '#5fffe0';
+      ctx.fillRect(t*0.15, -t*0.28, t*0.12, t*0.56);
+      ctx.restore();
+    } else if(face === 'نجوم'){
+      // sparkly star-shaped eyes
+      ctx.fillStyle = '#ffe45f';
+      [1,-1].forEach(side=>{
+        const ox = head.x + ex*t*0.32 + px*side*t*0.34;
+        const oy = head.y + ey*t*0.32 + py*side*t*0.34;
+        ctx.save();
+        ctx.translate(ox,oy);
+        ctx.beginPath();
+        for(let a=0;a<5;a++){
+          const ang = (Math.PI*2/5)*a - Math.PI/2;
+          const r1 = t*0.16, r2 = t*0.07;
+          const x1 = Math.cos(ang)*r1, y1 = Math.sin(ang)*r1;
+          a===0 ? ctx.moveTo(x1,y1) : ctx.lineTo(x1,y1);
+          const ang2 = ang + Math.PI/5;
+          ctx.lineTo(Math.cos(ang2)*r2, Math.sin(ang2)*r2);
+        }
+        ctx.closePath(); ctx.fill();
+        ctx.restore();
+      });
+    } else if(face === 'كرتوني'){
+      // large white eyes with big black pupils + open smile
+      [1,-1].forEach(side=>{
+        const ox = head.x + ex*t*0.28 + px*side*t*0.36;
+        const oy = head.y + ey*t*0.28 + py*side*t*0.36;
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath(); ctx.arc(ox,oy,t*0.24,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#0b1410';
+        ctx.beginPath(); ctx.arc(ox,oy,t*0.13,0,Math.PI*2); ctx.fill();
+      });
+      ctx.strokeStyle = '#0b1410';
+      ctx.lineWidth = Math.max(1.5, t*0.1);
+      ctx.beginPath();
+      ctx.arc(head.x+ex*t*0.5, head.y+ey*t*0.5, t*0.22, 0.3, Math.PI-0.3);
+      ctx.stroke();
+    } else {
+      // normal: simple round eyes
+      ctx.fillStyle = '#0b1410';
+      [1,-1].forEach(side=>{
+        const ox = head.x + ex*t*0.35 + px*side*t*0.32;
+        const oy = head.y + ey*t*0.35 + py*side*t*0.32;
+        ctx.beginPath();
+        ctx.arc(ox,oy,t*0.15,0,Math.PI*2);
+        ctx.fill();
+      });
+    }
+  }
+
+  function drawWorm(w){
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+
+    if(w.growFlash > 0){
+      ctx.shadowColor = w.color;
+      ctx.shadowBlur = 14;
+    }
+
+    const stripes = (w.stripes && w.stripes.length) ? w.stripes : [w.color];
+
+    if(stripes.length === 1){
+      ctx.strokeStyle = stripes[0];
+      ctx.lineWidth = w.thickness;
+      ctx.beginPath();
+      ctx.moveTo(w.segs[0].x, w.segs[0].y);
+      for(let i=1;i<w.segs.length;i+=2){
+        ctx.lineTo(w.segs[i].x, w.segs[i].y);
+      }
+      ctx.stroke();
+    } else {
+      // draw body as bands of stripe colors along the segment list (flag pattern down the body)
+      const bandSize = 5; // segments per color band
+      for(let i=0;i<w.segs.length-1;i++){
+        const bandIdx = Math.floor(i/bandSize) % stripes.length;
+        ctx.strokeStyle = stripes[bandIdx];
+        ctx.lineWidth = w.thickness;
+        ctx.beginPath();
+        ctx.moveTo(w.segs[i].x, w.segs[i].y);
+        ctx.lineTo(w.segs[i+1].x, w.segs[i+1].y);
+        ctx.stroke();
+      }
+    }
+    ctx.shadowBlur = 0;
+
+    // pattern overlay
+    if(w.pattern === 'مخطط'){
+      ctx.strokeStyle = 'rgba(0,0,0,0.28)';
+      ctx.lineWidth = Math.max(1.5, w.thickness*0.22);
+      for(let i=0;i<w.segs.length;i+=6){
+        const s = w.segs[i];
+        const nextS = w.segs[Math.min(i+1,w.segs.length-1)];
+        const ang = Math.atan2(nextS.y-s.y, nextS.x-s.x)+Math.PI/2;
+        const dx = Math.cos(ang)*w.thickness*0.5, dy = Math.sin(ang)*w.thickness*0.5;
+        ctx.beginPath();
+        ctx.moveTo(s.x-dx,s.y-dy);
+        ctx.lineTo(s.x+dx,s.y+dy);
+        ctx.stroke();
+      }
+    } else if(w.pattern === 'منقط'){
+      ctx.fillStyle = 'rgba(0,0,0,0.25)';
+      for(let i=0;i<w.segs.length;i+=4){
+        const s = w.segs[i];
+        ctx.beginPath();
+        ctx.arc(s.x,s.y,Math.max(1.2,w.thickness*0.16),0,Math.PI*2);
+        ctx.fill();
+      }
+    } else if(w.pattern === 'متدرج'){
+      // lighten toward the head, darken toward the tail for a gradient feel
+      for(let i=0;i<w.segs.length;i+=3){
+        const t = i / w.segs.length;
+        ctx.fillStyle = t < 0.5 ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.18)';
+        const s = w.segs[i];
+        ctx.beginPath();
+        ctx.arc(s.x,s.y,w.thickness*0.5,0,Math.PI*2);
+        ctx.fill();
+      }
+    } else if(w.pattern === 'متلألئ'){
+      // sparkle highlights scattered along the body
+      ctx.fillStyle = 'rgba(255,255,255,0.85)';
+      for(let i=0;i<w.segs.length;i+=5){
+        const s = w.segs[i];
+        const sparkle = (Math.sin(i*1.7 + Date.now()/200) + 1)/2;
+        if(sparkle > 0.75){
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, w.thickness*0.12, 0, Math.PI*2);
+          ctx.fill();
+        }
+      }
+    }
+
+    const head = w.segs[0];
+    ctx.fillStyle = w.color;
+    ctx.beginPath();
+    ctx.arc(head.x, head.y, w.thickness*0.62, 0, Math.PI*2);
+    ctx.fill();
+
+    drawFace(w, head);
+
+    if(w.isPlayer){
+      ctx.fillStyle = 'rgba(255,255,255,0.8)';
+      ctx.font = '12px sans-serif';
+      ctx.textAlign = 'center';
+      const label = w.emoji ? `${w.emoji} ${w.name}` : w.name;
+      ctx.fillText(label, head.x, head.y - w.thickness - 8);
+    }
+  }
+
+
+  // ---- skin picker UI ----
   const colorPickerEl = document.getElementById('colorPicker');
   const flagPickerEl = document.getElementById('flagPicker');
+  const skinNameLabel = document.getElementById('skinNameLabel');
+  skinNameLabel.textContent = solidColors[0].name;
+
   function makeSkinBtn(s, container, isFirst){
     const btn = document.createElement('div');
-    btn.className = 'skin-opt' + (isFirst?' selected':'');
+    btn.className = 'skin-opt' + (isFirst ? ' selected' : '');
     btn.title = s.name;
-    s.stripes.forEach(c=>{
-      const band = document.createElement('div');
-      band.className = 'stripe'; band.style.background = c;
-      btn.appendChild(band);
-    });
+    if(s.emoji){
+      // Real flag emoji: shows the actual flag artwork (crescents, stars, emblems, etc.)
+      btn.style.display = 'flex';
+      btn.style.alignItems = 'center';
+      btn.style.justifyContent = 'center';
+      btn.style.fontSize = '22px';
+      btn.style.background = 'rgba(255,255,255,0.04)';
+      btn.textContent = s.emoji;
+    } else {
+      s.stripes.forEach(c=>{
+        const band = document.createElement('div');
+        band.className = 'stripe';
+        band.style.background = c;
+        btn.appendChild(band);
+      });
+    }
     btn.addEventListener('click', ()=>{
       chosenSkin = s;
+      skinNameLabel.textContent = s.name;
       [...colorPickerEl.children, ...flagPickerEl.children].forEach(c=>c.classList.remove('selected'));
       btn.classList.add('selected');
     });
     container.appendChild(btn);
   }
-  solidColors.forEach((s,i)=>makeSkinBtn(s,colorPickerEl,i===0));
-  flagSkins.forEach(s=>makeSkinBtn(s,flagPickerEl,false));
+
+  solidColors.forEach((s,i)=> makeSkinBtn(s, colorPickerEl, i===0));
+  flagSkins.forEach(s=> makeSkinBtn(s, flagPickerEl, false));
+  document.getElementById('flagCount').textContent = flagSkins.length;
 
   const patternPickerEl = document.getElementById('patternPicker');
   patterns.forEach((p,i)=>{
@@ -237,197 +1168,46 @@
     patternPickerEl.appendChild(btn);
   });
 
-  // ================= SOCKET CONNECTION =================
-  const socket = io(SERVER_URL, { transports: ['websocket', 'polling'] });
-  let myId = null;
-  let worldState = { worms: [], food: [], worldRadius: 2200 };
-  let running = false;
-  let playing = false;
-
-  const connStatus = document.getElementById('connStatus');
-  const playBtn = document.getElementById('playBtn');
-  const connectMsg = document.getElementById('connectMsg');
-
-  socket.on('connect', ()=>{
-    connStatus.textContent = 'متصل بالسيرفر';
-    connStatus.className = 'conn-status online';
-    playBtn.disabled = false;
-    connectMsg.textContent = '';
-  });
-  socket.on('disconnect', ()=>{
-    connStatus.textContent = 'انقطع الاتصال...';
-    connStatus.className = 'conn-status offline';
-    playBtn.disabled = true;
-  });
-  socket.on('connect_error', ()=>{
-    connStatus.textContent = 'تعذر الاتصال بالسيرفر';
-    connStatus.className = 'conn-status offline';
-    connectMsg.textContent = 'تأكد أن رابط السيرفر صحيح وأنه يعمل';
-    playBtn.disabled = true;
+  const faceIcons = {'عادي':'🙂','لطيف':'🥰','غاضب':'😠','روبوت':'🤖','نجوم':'🤩','كرتوني':'😄'};
+  const facePickerEl = document.getElementById('facePicker');
+  faceStyles.forEach((f,i)=>{
+    const btn = document.createElement('div');
+    btn.className = 'pattern-opt' + (i===0?' selected':'');
+    btn.textContent = (faceIcons[f]||'') + ' ' + f;
+    btn.addEventListener('click', ()=>{
+      chosenFace = f;
+      [...facePickerEl.children].forEach(c=>c.classList.remove('selected'));
+      btn.classList.add('selected');
+    });
+    facePickerEl.appendChild(btn);
   });
 
-  socket.on('joined', (data)=>{
-    myId = data.id;
-    worldState.worldRadius = data.worldRadius;
-    playing = true;
-    running = true;
-    document.getElementById('startScreen').classList.add('hidden');
-    document.getElementById('endScreen').classList.add('hidden');
-  });
+  document.getElementById('playBtn').addEventListener('click', startGame);
+  document.getElementById('retryBtn').addEventListener('click', startGame);
 
-  socket.on('state', (data)=>{
-    worldState = data;
-    document.getElementById('onlineCount').textContent = data.worms.length;
-    if(playing) updateHud();
-  });
-
-  socket.on('youDied', (data)=>{
-    playing = false;
-    document.getElementById('finalScore').textContent = data.finalLength;
-    document.getElementById('killedBy').textContent = 'انتهت جولتك';
-    document.getElementById('endScreen').classList.remove('hidden');
-  });
-
-  socket.on('youRespawned', (data)=>{
-    // lives system handled server-side; just continue playing
-  });
-
-  playBtn.disabled = true;
-  connectMsg.textContent = 'جاري الاتصال بالسيرفر...';
-
-  // ---- join / retry ----
-  function join(){
-    const name = (document.getElementById('nameInput').value || 'لاعب').slice(0,12);
-    socket.emit('join', { name, skin: chosenSkin, pattern: chosenPattern });
-  }
-  playBtn.addEventListener('click', join);
-  document.getElementById('retryBtn').addEventListener('click', ()=>{
-    document.getElementById('endScreen').classList.add('hidden');
-    join();
-  });
+  // ---- exit / restart ----
+  const confirmBox = document.getElementById('confirmBox');
   document.getElementById('exitBtn').addEventListener('click', ()=>{
+    if(!running) return; // nothing to exit mid-game
+    confirmBox.classList.remove('hidden');
+  });
+  document.getElementById('confirmNo').addEventListener('click', ()=>{
+    confirmBox.classList.add('hidden');
+  });
+  document.getElementById('confirmYes').addEventListener('click', ()=>{
+    confirmBox.classList.add('hidden');
     playing = false;
     running = false;
-    socket.disconnect();
-    socket.connect();
+    socket.emit('leave');
+    document.getElementById('endScreen').classList.add('hidden');
     document.getElementById('startScreen').classList.remove('hidden');
   });
 
-  // ---- input: send direction to server ----
-  let pointer = {x:0,y:0,active:false};
-  let boosting = false;
-  canvas.addEventListener('mousemove', e=>{ pointer.x=e.clientX; pointer.y=e.clientY; pointer.active=true; });
-  canvas.addEventListener('touchmove', e=>{
-    const t=e.touches[0]; pointer.x=t.clientX; pointer.y=t.clientY; pointer.active=true; e.preventDefault();
-  }, {passive:false});
-  canvas.addEventListener('touchstart', e=>{
-    const t=e.touches[0]; pointer.x=t.clientX; pointer.y=t.clientY; pointer.active=true; e.preventDefault();
-  }, {passive:false});
-  // boosting is a deliberate second finger / long-press, not implicit on every touch;
-  // simplest reliable version: hold anywhere for 250ms without moving = boost
-  let touchHoldTimer = null;
-  canvas.addEventListener('touchstart', ()=>{
-    clearTimeout(touchHoldTimer);
-    touchHoldTimer = setTimeout(()=>{ boosting = true; }, 250);
-  });
-  canvas.addEventListener('touchend', ()=>{ clearTimeout(touchHoldTimer); boosting=false; });
-  window.addEventListener('mousedown', ()=>{ boosting=true; });
-  window.addEventListener('mouseup', ()=>{ boosting=false; });
-
-  setInterval(()=>{
-    if(!playing) return;
-    if(!pointer.active){
-      socket.emit('input', { angle: null, boosting: false });
-      return;
-    }
-    const dx = pointer.x - W/2, dy = pointer.y - H/2;
-    if(Math.abs(dx)>4 || Math.abs(dy)>4){
-      socket.emit('input', { angle: Math.atan2(dy,dx), boosting });
-    }
-  }, 50); // send input ~20x/sec, server runs its own authoritative tick
-
-  // ---- HUD ----
-  function findMe(){ return worldState.worms.find(w=>w.id===myId); }
-  function updateHud(){
-    const me = findMe();
-    if(me) document.getElementById('scoreVal').textContent = me.segs.length;
-    const ranked = [...worldState.worms].sort((a,b)=>b.segs.length-a.segs.length).slice(0,5);
-    document.getElementById('lbList').innerHTML = ranked.map((w,i)=>`
-      <div class="lb-row ${w.id===myId?'me':''}">
-        <span>${i+1}. ${w.name}</span><span class="n">${w.segs.length}</span>
-      </div>
-    `).join('');
-  }
-
-  // ---- drawing (reuses same visual style as the offline version) ----
-  function drawFoodItem(f){
-    if(f.type==='fruit'){
-      ctx.save(); ctx.translate(f.x,f.y); ctx.rotate(f.rot||0);
-      ctx.fillStyle = '#ff9f1c';
-      ctx.beginPath(); ctx.arc(0,0,f.r,0,Math.PI*2); ctx.fill();
-      ctx.restore();
-    } else if(f.type==='candy' || f.type==='bigcandy'){
-      ctx.fillStyle = f.color || '#ff5f8f';
-      ctx.beginPath(); ctx.arc(f.x,f.y,f.r,0,Math.PI*2); ctx.fill();
-    } else if(f.type==='bonus'){
-      ctx.fillStyle = '#ffe45f';
-      ctx.beginPath(); ctx.arc(f.x,f.y,f.r,0,Math.PI*2); ctx.fill();
-    } else if(f.type==='heart'){
-      ctx.fillStyle = '#ff5f7a';
-      ctx.beginPath(); ctx.arc(f.x,f.y,f.r,0,Math.PI*2); ctx.fill();
-    } else if(f.type==='mult'){
-      const colorByVal = {2:'#8fffb0',4:'#5fd8ff',8:'#ffe45f',16:'#ff5f5f'};
-      ctx.fillStyle = colorByVal[f.value] || '#8fffb0';
-      ctx.beginPath(); ctx.arc(f.x,f.y,f.r,0,Math.PI*2); ctx.fill();
-      ctx.fillStyle = '#0b1410'; ctx.font = 'bold 10px sans-serif'; ctx.textAlign='center';
-      ctx.fillText('×'+f.value, f.x, f.y+3);
-    }
-  }
-
-  function drawWorm(w){
-    ctx.lineJoin='round'; ctx.lineCap='round';
-    const stripes = (w.stripes && w.stripes.length) ? w.stripes : [w.color];
-    if(stripes.length===1){
-      ctx.strokeStyle = stripes[0]; ctx.lineWidth = w.thickness;
-      ctx.beginPath(); ctx.moveTo(w.segs[0].x,w.segs[0].y);
-      for(let i=1;i<w.segs.length;i+=2) ctx.lineTo(w.segs[i].x,w.segs[i].y);
-      ctx.stroke();
-    } else {
-      const bandSize=5;
-      for(let i=0;i<w.segs.length-1;i++){
-        ctx.strokeStyle = stripes[Math.floor(i/bandSize)%stripes.length];
-        ctx.lineWidth = w.thickness;
-        ctx.beginPath(); ctx.moveTo(w.segs[i].x,w.segs[i].y); ctx.lineTo(w.segs[i+1].x,w.segs[i+1].y); ctx.stroke();
-      }
-    }
-    const head = w.segs[0];
-    ctx.fillStyle = w.color;
-    ctx.beginPath(); ctx.arc(head.x,head.y,w.thickness*0.62,0,Math.PI*2); ctx.fill();
-    const ex=Math.cos(w.dir), ey=Math.sin(w.dir), px=-ey, py=ex;
-    ctx.fillStyle = '#0b1410';
-    [1,-1].forEach(side=>{
-      const ox = head.x+ex*w.thickness*0.35+px*side*w.thickness*0.32;
-      const oy = head.y+ey*w.thickness*0.35+py*side*w.thickness*0.32;
-      ctx.beginPath(); ctx.arc(ox,oy,w.thickness*0.15,0,Math.PI*2); ctx.fill();
-    });
-    ctx.fillStyle = 'rgba(255,255,255,0.8)'; ctx.font='12px sans-serif'; ctx.textAlign='center';
-    const label = w.emoji ? `${w.emoji} ${w.name}` : w.name;
-    ctx.fillText(label, head.x, head.y - w.thickness - 8);
-  }
-
-  function render(){
-    ctx.fillStyle = '#0e1520'; ctx.fillRect(0,0,W,H);
-    const me = findMe();
-    const camX = me ? me.segs[0].x : 0, camY = me ? me.segs[0].y : 0;
-    ctx.save(); ctx.translate(W/2-camX, H/2-camY);
-
-    ctx.strokeStyle = 'rgba(255,95,95,0.35)'; ctx.lineWidth=6;
-    ctx.beginPath(); ctx.arc(0,0,worldState.worldRadius,0,Math.PI*2); ctx.stroke();
-
-    for(const f of worldState.food) drawFoodItem(f);
-    for(const w of worldState.worms) drawWorm(w);
-
-    ctx.restore();
+  // ---- render loop: draws whatever the server last sent us ----
+  resize();
+  function render(ts){
+    draw(ts);
+    if(playing) drawMinimap();
     requestAnimationFrame(render);
   }
   requestAnimationFrame(render);
