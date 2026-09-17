@@ -38,7 +38,19 @@ function angleLerp(a, b, t) {
 
 // ---------------- World state ----------------
 let food = [];
-const players = {}; // socket.id -> worm state
+const players = {}; // socket.id -> worm state (both real players and bots share this)
+
+const botNames = ['كوبرا','فايبر','نمر','صاعقة','ظل','نينجا٧','جوكر','عاصفة','رمح','برق','كوماندو','ذئب','سهم','جمرة'];
+const botSkins = [
+  { c: '#8fffb0', stripes: ['#8fffb0'] },
+  { c: '#5fd8ff', stripes: ['#5fd8ff'] },
+  { c: '#ff9f5f', stripes: ['#ff9f5f'] },
+  { c: '#ff5f8f', stripes: ['#ff5f8f'] },
+  { c: '#c48fff', stripes: ['#c48fff'] },
+  { c: '#ffe45f', stripes: ['#ffe45f'] }
+];
+const MAX_BOTS = 10;      // how many bots fill the arena when it's empty
+const MIN_HUMANS_FOR_ZERO_BOTS = 6; // bots fade out once this many real players are in
 
 function makeFoodItem(x, y) {
   const pulse = Math.random() * 10;
@@ -68,7 +80,7 @@ function spawnFood(n) {
 }
 spawnFood(FOOD_COUNT);
 
-function makeWorm(id, name, skin, pattern, face) {
+function makeWorm(id, name, skin, pattern, face, isBot) {
   const ang = Math.random() * Math.PI * 2;
   const spawnR = Math.random() * WORLD_R * 0.6;
   const x = Math.cos(ang) * spawnR, y = Math.sin(ang) * spawnR;
@@ -87,14 +99,50 @@ function makeWorm(id, name, skin, pattern, face) {
     speed: 2.1,
     boosting: false,
     alive: true,
+    isBot: !!isBot,
     thickness: 15,
     _targetLen: 10,
     multiplier: 1,
     multTimeLeft: 0,
     lives: 0,
-    _boostTick: 0
+    _boostTick: 0,
+    _wanderTimer: 0,
+    _foodScanTimer: 0,
+    _foodTargetAngle: null
   };
 }
+
+function makeBot() {
+  const id = 'bot-' + Math.random().toString(36).slice(2, 9);
+  const name = botNames[Math.floor(Math.random() * botNames.length)];
+  const skin = botSkins[Math.floor(Math.random() * botSkins.length)];
+  players[id] = makeWorm(id, name, skin, 'صلب', 'عادي', true);
+}
+
+function countHumans() {
+  return Object.values(players).filter(w => !w.isBot).length;
+}
+function countBots() {
+  return Object.values(players).filter(w => w.isBot).length;
+}
+
+// Keep the arena populated when few real players are around, and thin bots
+// out as more real players join so humans aren't crowded out.
+function manageBotPopulation() {
+  const humans = countHumans();
+  const bots = countBots();
+  const targetBots = Math.max(0, Math.round(MAX_BOTS * (1 - humans / MIN_HUMANS_FOR_ZERO_BOTS)));
+
+  if (bots < targetBots) {
+    makeBot();
+  } else if (bots > targetBots) {
+    const botIds = Object.keys(players).filter(id => players[id].isBot);
+    if (botIds.length) delete players[botIds[0]];
+  }
+}
+setInterval(manageBotPopulation, 3000);
+// seed a few bots immediately so the arena isn't empty on first boot
+for (let i = 0; i < MAX_BOTS; i++) makeBot();
 
 function growWorm(w, amount) {
   w._targetLen += amount * (w.multiplier || 1);
@@ -136,6 +184,14 @@ function respawnWorm(w) {
 
 function killWorm(w) {
   dropLoot(w.segs);
+
+  if (w.isBot) {
+    // bots don't have a real socket to notify — just remove them;
+    // manageBotPopulation() will spawn a fresh replacement shortly
+    delete players[w.id];
+    return;
+  }
+
   if (w.lives > 0) {
     w.lives--;
     respawnWorm(w);
@@ -165,13 +221,53 @@ function eatFood(w) {
   }
 }
 
+function updateBotAI(w, dt) {
+  w._wanderTimer -= dt;
+  if (w._wanderTimer <= 0) {
+    w._wanderTimer = rand(1.2, 2.6);
+    w.targetDir += rand(-0.9, 0.9);
+  }
+
+  // throttle the food scan so bots don't scan the whole food list every tick
+  w._foodScanTimer -= dt;
+  if (w._foodScanTimer <= 0) {
+    w._foodScanTimer = 0.2;
+    const head = w.segs[0];
+    let closest = null, cd = 220 * 220;
+    for (let i = 0; i < food.length; i += 3) {
+      const f = food[i];
+      const priority = (f.type === 'mult') ? (2 + f.value * 0.15) : (f.type === 'bonus' || f.type === 'heart') ? 2.4 : (f.type === 'bigcandy' ? 2 : f.type === 'candy' ? 1.5 : 1);
+      const d = dist2(head, f) / priority;
+      if (d < cd) { cd = d; closest = f; }
+    }
+    w._foodTargetAngle = closest ? Math.atan2(closest.y - w.segs[0].y, closest.x - w.segs[0].x) : null;
+  }
+  if (w._foodTargetAngle !== null) {
+    w.targetDir = angleLerp(w.targetDir, w._foodTargetAngle, 0.4);
+  }
+
+  const head = w.segs[0];
+  const distFromCenter = Math.hypot(head.x, head.y);
+  if (distFromCenter > WORLD_R * 0.85) {
+    const toCenter = Math.atan2(-head.y, -head.x);
+    w.targetDir = angleLerp(w.targetDir, toCenter, 0.5);
+  }
+
+  // occasionally toggle boost for variety
+  if (Math.random() < 0.002 && w.segs.length > 30) w.boosting = true;
+  else if (Math.random() < 0.02) w.boosting = false;
+}
+
 function updateWorm(w, dt) {
   if (!w.alive) return;
   if (w.multTimeLeft > 0) {
     w.multTimeLeft -= dt;
     if (w.multTimeLeft <= 0) { w.multTimeLeft = 0; w.multiplier = 1; }
   }
-  w.dir = angleLerp(w.dir, w.targetDir, 0.18);
+
+  if (w.isBot) updateBotAI(w, dt);
+
+  w.dir = angleLerp(w.dir, w.targetDir, w.isBot ? 0.09 : 0.18);
   const spd = w.boosting ? w.speed * 1.9 : w.speed;
   const head = w.segs[0];
   const nx = head.x + Math.cos(w.dir) * spd;
@@ -235,8 +331,9 @@ function checkCollisions() {
 io.on('connection', (socket) => {
   socket.on('join', (data) => {
     const skin = data?.skin || {};
-    players[socket.id] = makeWorm(socket.id, data?.name, skin, data?.pattern, data?.face);
+    players[socket.id] = makeWorm(socket.id, data?.name, skin, data?.pattern, data?.face, false);
     socket.emit('joined', { id: socket.id, worldRadius: WORLD_R });
+    manageBotPopulation();
   });
 
   socket.on('input', (data) => {
@@ -254,10 +351,12 @@ io.on('connection', (socket) => {
 
   socket.on('leave', () => {
     delete players[socket.id];
+    manageBotPopulation();
   });
 
   socket.on('disconnect', () => {
     delete players[socket.id];
+    manageBotPopulation();
   });
 });
 
