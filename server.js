@@ -22,7 +22,7 @@ app.get('/', (req, res) => {
 
 // ---------------- Game constants ----------------
 const WORLD_R = 2200;
-const FOOD_COUNT = 220;
+const FOOD_COUNT = 400;
 const TICK_RATE = 20; // server updates per second
 const SPECIAL_CHANCE = { candy: 0.14, bigcandy: 0.03, bonus: 0.045, heart: 0.045, mult2: 0.03, mult4: 0.018, mult8: 0.008, mult16: 0.003 };
 const MULT_DURATION = 30;
@@ -55,20 +55,20 @@ const MIN_HUMANS_FOR_ZERO_BOTS = 6; // bots fade out once this many real players
 function makeFoodItem(x, y) {
   const pulse = Math.random() * 10;
   const r = Math.random();
-  if (r < SPECIAL_CHANCE.mult16) return { x, y, type: 'mult', value: 16, r: 11, pulse };
-  if (r < SPECIAL_CHANCE.mult16 + SPECIAL_CHANCE.mult8) return { x, y, type: 'mult', value: 8, r: 10, pulse };
-  if (r < SPECIAL_CHANCE.mult16 + SPECIAL_CHANCE.mult8 + SPECIAL_CHANCE.mult4) return { x, y, type: 'mult', value: 4, r: 9, pulse };
-  if (r < SPECIAL_CHANCE.mult16 + SPECIAL_CHANCE.mult8 + SPECIAL_CHANCE.mult4 + SPECIAL_CHANCE.mult2) return { x, y, type: 'mult', value: 2, r: 8, pulse };
+  if (r < SPECIAL_CHANCE.mult16) return { x, y, type: 'mult', value: 16, r: 16, pulse };
+  if (r < SPECIAL_CHANCE.mult16 + SPECIAL_CHANCE.mult8) return { x, y, type: 'mult', value: 8, r: 14, pulse };
+  if (r < SPECIAL_CHANCE.mult16 + SPECIAL_CHANCE.mult8 + SPECIAL_CHANCE.mult4) return { x, y, type: 'mult', value: 4, r: 13, pulse };
+  if (r < SPECIAL_CHANCE.mult16 + SPECIAL_CHANCE.mult8 + SPECIAL_CHANCE.mult4 + SPECIAL_CHANCE.mult2) return { x, y, type: 'mult', value: 2, r: 12, pulse };
   const base = SPECIAL_CHANCE.mult16 + SPECIAL_CHANCE.mult8 + SPECIAL_CHANCE.mult4 + SPECIAL_CHANCE.mult2;
-  if (r < base + SPECIAL_CHANCE.heart) return { x, y, type: 'heart', r: 12, pulse };
-  if (r < base + SPECIAL_CHANCE.heart + SPECIAL_CHANCE.bonus) return { x, y, type: 'bonus', r: 13, pulse };
+  if (r < base + SPECIAL_CHANCE.heart) return { x, y, type: 'heart', r: 17, pulse };
+  if (r < base + SPECIAL_CHANCE.heart + SPECIAL_CHANCE.bonus) return { x, y, type: 'bonus', r: 18, pulse };
   if (r < base + SPECIAL_CHANCE.heart + SPECIAL_CHANCE.bonus + SPECIAL_CHANCE.bigcandy) {
-    return { x, y, type: 'bigcandy', r: 16, color: ['#ff5f8f', '#5fd8ff', '#ffe45f', '#c48fff'][Math.floor(Math.random() * 4)], pulse };
+    return { x, y, type: 'bigcandy', r: 22, color: ['#ff5f8f', '#5fd8ff', '#ffe45f', '#c48fff'][Math.floor(Math.random() * 4)], pulse };
   }
   if (r < base + SPECIAL_CHANCE.heart + SPECIAL_CHANCE.bonus + SPECIAL_CHANCE.bigcandy + SPECIAL_CHANCE.candy) {
-    return { x, y, type: 'candy', r: 8, color: ['#ff5f8f', '#5fd8ff', '#ffe45f'][Math.floor(Math.random() * 3)], pulse };
+    return { x, y, type: 'candy', r: 12, color: ['#ff5f8f', '#5fd8ff', '#ffe45f'][Math.floor(Math.random() * 3)], pulse };
   }
-  return { x, y, type: 'fruit', shape: fruitShapes[Math.floor(Math.random() * fruitShapes.length)], r: rand(10, 13), rot: Math.random() * Math.PI * 2 };
+  return { x, y, type: 'fruit', shape: fruitShapes[Math.floor(Math.random() * fruitShapes.length)], r: rand(15, 19), rot: Math.random() * Math.PI * 2 };
 }
 
 function spawnFood(n) {
@@ -160,11 +160,11 @@ function dropLoot(segs) {
     const s = segs[i];
     const roll = Math.random();
     if (roll < 0.12) {
-      food.push({ x: s.x, y: s.y, type: 'candy', r: 8, color: ['#ff5f8f', '#5fd8ff', '#ffe45f'][Math.floor(Math.random() * 3)] });
+      food.push({ x: s.x, y: s.y, type: 'candy', r: 12, color: ['#ff5f8f', '#5fd8ff', '#ffe45f'][Math.floor(Math.random() * 3)] });
     } else if (roll < 0.15) {
-      food.push({ x: s.x, y: s.y, type: 'bonus', r: 13 });
+      food.push({ x: s.x, y: s.y, type: 'bonus', r: 18 });
     } else {
-      food.push({ x: s.x, y: s.y, type: 'fruit', shape: fruitShapes[Math.floor(Math.random() * fruitShapes.length)], r: rand(9, 12), rot: Math.random() * Math.PI * 2 });
+      food.push({ x: s.x, y: s.y, type: 'fruit', shape: fruitShapes[Math.floor(Math.random() * fruitShapes.length)], r: rand(14, 18), rot: Math.random() * Math.PI * 2 });
     }
   }
 }
