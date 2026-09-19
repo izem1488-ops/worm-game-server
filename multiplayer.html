@@ -233,6 +233,12 @@
     <div id="multRow" style="display:none; margin-top:6px; color:#ffe45f; font-weight:700;">
       ×<span id="multVal">1</span> <span id="multTimer" style="color:#8fa39a; font-weight:400;"></span>
     </div>
+    <div id="zoomRow" style="display:none; margin-top:4px; color:#5fd8ff; font-weight:700; font-size:12px;">
+      🔍 تكبير الرؤية <span id="zoomTimer" style="color:#8fa39a; font-weight:400;"></span>
+    </div>
+    <div id="magnetRow" style="display:none; margin-top:4px; color:#ff6b5e; font-weight:700; font-size:12px;">
+      🧲 مغناطيس نشط <span id="magnetTimer" style="color:#8fa39a; font-weight:400;"></span>
+    </div>
     <div class="exit-btn"><button id="exitBtn" style="pointer-events:all;">🚪 خروج / إعادة</button></div>
   </div>
   <div class="leaderboard" id="leaderboard">
@@ -248,6 +254,8 @@
     <div>⚡ بونص — نمو فوري كبير</div>
     <div>❤️ قلب — حياة إضافية</div>
     <div>×2 ×4 ×8 ×16 — مضاعف الأكل لـ٣٠ث</div>
+    <div>🔍 عدسة — تكبير مجال الرؤية</div>
+    <div>🧲 مغناطيس — يجذب الطعام القريب</div>
   </div>
   <div class="boost-bonus" id="boostPopup"></div>
 
@@ -572,6 +580,8 @@
     playerLives = 0;
     renderLives();
     document.getElementById('multRow').style.display = 'none';
+    document.getElementById('zoomRow').style.display = 'none';
+    document.getElementById('magnetRow').style.display = 'none';
     document.getElementById('startScreen').classList.add('hidden');
     document.getElementById('endScreen').classList.add('hidden');
   });
@@ -631,6 +641,20 @@
         document.getElementById('multTimer').textContent = me.multTimeLeft + 'ث';
       } else {
         multRow.style.display = 'none';
+      }
+      const zoomRow = document.getElementById('zoomRow');
+      if(me.zoomTimeLeft > 0){
+        zoomRow.style.display = 'block';
+        document.getElementById('zoomTimer').textContent = me.zoomTimeLeft + 'ث';
+      } else {
+        zoomRow.style.display = 'none';
+      }
+      const magnetRow = document.getElementById('magnetRow');
+      if(me.magnetTimeLeft > 0){
+        magnetRow.style.display = 'block';
+        document.getElementById('magnetTimer').textContent = me.magnetTimeLeft + 'ث';
+      } else {
+        magnetRow.style.display = 'none';
       }
     }
     const ranked = [...worldState.worms].sort((a,b)=>wormLength(b)-wormLength(a)).slice(0,5);
@@ -701,8 +725,15 @@
     const camY = me ? me.segs[0].y : camera.y;
     camera.x = camX; camera.y = camY;
 
+    // zoom power-up: scale the view out so more of the arena is visible.
+    // 1.0 = normal, lower values = zoomed out (see more of the map)
+    const zoomActive = me && me.zoomTimeLeft > 0;
+    const zoomScale = zoomActive ? 0.6 : 1;
+
     ctx.save();
-    ctx.translate(W/2 - camX, H/2 - camY);
+    ctx.translate(W/2, H/2);
+    ctx.scale(zoomScale, zoomScale);
+    ctx.translate(-camX, -camY);
 
     ctx.strokeStyle = 'rgba(255,95,95,0.35)';
     ctx.lineWidth = 6;
@@ -713,7 +744,9 @@
     ctx.strokeStyle = 'rgba(255,255,255,0.03)';
     ctx.lineWidth = 1;
     const gridSize = 60;
-    const left = camX - W, right = camX + W, top = camY - H, bottom = camY + H;
+    // widen the visible/culling bounds to match how much extra area zoom reveals
+    const viewW = (W/zoomScale), viewH = (H/zoomScale);
+    const left = camX - viewW, right = camX + viewW, top = camY - viewH, bottom = camY + viewH;
     for(let gx = Math.floor(left/gridSize)*gridSize; gx<right; gx+=gridSize){
       ctx.beginPath(); ctx.moveTo(gx,top); ctx.lineTo(gx,bottom); ctx.stroke();
     }
@@ -910,6 +943,46 @@
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText('×'+f.value, 0, 1);
+      ctx.restore();
+    } else if(f.type === 'zoom'){
+      // magnifying glass icon
+      ctx.save();
+      ctx.translate(f.x,f.y);
+      ctx.scale(pulse,pulse);
+      ctx.shadowColor = '#5fd8ff'; ctx.shadowBlur = 14;
+      ctx.strokeStyle = '#5fd8ff';
+      ctx.lineWidth = Math.max(2, f.r*0.18);
+      ctx.beginPath();
+      ctx.arc(-f.r*0.12,-f.r*0.12, f.r*0.5, 0, Math.PI*2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(f.r*0.28,f.r*0.28);
+      ctx.lineTo(f.r*0.62,f.r*0.62);
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+      ctx.restore();
+    } else if(f.type === 'magnet'){
+      // horseshoe magnet icon
+      ctx.save();
+      ctx.translate(f.x,f.y);
+      ctx.scale(pulse,pulse);
+      ctx.shadowColor = '#ff6b5e'; ctx.shadowBlur = 14;
+      ctx.strokeStyle = '#c9432f';
+      ctx.lineWidth = Math.max(3, f.r*0.3);
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.arc(0, f.r*0.05, f.r*0.5, Math.PI*0.15, Math.PI*0.85, false);
+      ctx.stroke();
+      // magnet tip highlights (silver/red poles)
+      ctx.strokeStyle = '#e8ecea'; ctx.lineWidth = Math.max(2, f.r*0.2);
+      ctx.beginPath();
+      ctx.moveTo(-f.r*0.5, f.r*0.05); ctx.lineTo(-f.r*0.5, f.r*0.55);
+      ctx.stroke();
+      ctx.strokeStyle = '#ff6b5e';
+      ctx.beginPath();
+      ctx.moveTo(f.r*0.5, f.r*0.05); ctx.lineTo(f.r*0.5, f.r*0.55);
+      ctx.stroke();
+      ctx.shadowBlur = 0;
       ctx.restore();
     }
   }

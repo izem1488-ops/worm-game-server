@@ -24,8 +24,11 @@ app.get('/', (req, res) => {
 const WORLD_R = 2200;
 const FOOD_COUNT = 400;
 const TICK_RATE = 20; // server updates per second
-const SPECIAL_CHANCE = { candy: 0.14, bigcandy: 0.03, bonus: 0.045, heart: 0.045, mult2: 0.03, mult4: 0.018, mult8: 0.008, mult16: 0.003 };
+const SPECIAL_CHANCE = { candy: 0.14, bigcandy: 0.03, bonus: 0.045, heart: 0.045, mult2: 0.03, mult4: 0.018, mult8: 0.008, mult16: 0.003, zoom: 0.02, magnet: 0.02 };
 const MULT_DURATION = 30;
+const ZOOM_DURATION = 15;   // seconds the zoom-out effect lasts
+const MAGNET_DURATION = 12; // seconds food gets pulled toward the player
+const MAGNET_RADIUS = 260;  // how far the magnet reaches to pull food in
 
 const fruitShapes = ['grape', 'cherry', 'orange', 'banana', 'apple', 'watermelon'];
 
@@ -59,7 +62,10 @@ function makeFoodItem(x, y) {
   if (r < SPECIAL_CHANCE.mult16 + SPECIAL_CHANCE.mult8) return { x, y, type: 'mult', value: 8, r: 14, pulse };
   if (r < SPECIAL_CHANCE.mult16 + SPECIAL_CHANCE.mult8 + SPECIAL_CHANCE.mult4) return { x, y, type: 'mult', value: 4, r: 13, pulse };
   if (r < SPECIAL_CHANCE.mult16 + SPECIAL_CHANCE.mult8 + SPECIAL_CHANCE.mult4 + SPECIAL_CHANCE.mult2) return { x, y, type: 'mult', value: 2, r: 12, pulse };
-  const base = SPECIAL_CHANCE.mult16 + SPECIAL_CHANCE.mult8 + SPECIAL_CHANCE.mult4 + SPECIAL_CHANCE.mult2;
+  const base1 = SPECIAL_CHANCE.mult16 + SPECIAL_CHANCE.mult8 + SPECIAL_CHANCE.mult4 + SPECIAL_CHANCE.mult2;
+  if (r < base1 + SPECIAL_CHANCE.zoom) return { x, y, type: 'zoom', r: 16, pulse };
+  if (r < base1 + SPECIAL_CHANCE.zoom + SPECIAL_CHANCE.magnet) return { x, y, type: 'magnet', r: 16, pulse };
+  const base = base1 + SPECIAL_CHANCE.zoom + SPECIAL_CHANCE.magnet;
   if (r < base + SPECIAL_CHANCE.heart) return { x, y, type: 'heart', r: 17, pulse };
   if (r < base + SPECIAL_CHANCE.heart + SPECIAL_CHANCE.bonus) return { x, y, type: 'bonus', r: 18, pulse };
   if (r < base + SPECIAL_CHANCE.heart + SPECIAL_CHANCE.bonus + SPECIAL_CHANCE.bigcandy) {
@@ -104,6 +110,8 @@ function makeWorm(id, name, skin, pattern, face, isBot) {
     _targetLen: 10,
     multiplier: 1,
     multTimeLeft: 0,
+    zoomTimeLeft: 0,
+    magnetTimeLeft: 0,
     lives: 0,
     _boostTick: 0,
     _wanderTimer: 0,
@@ -216,6 +224,8 @@ function eatFood(w) {
       else if (f.type === 'bonus') growWorm(w, 18);
       else if (f.type === 'heart') { w.lives++; growWorm(w, 3); }
       else if (f.type === 'mult') applyMultiplier(w, f.value);
+      else if (f.type === 'zoom') w.zoomTimeLeft = ZOOM_DURATION;
+      else if (f.type === 'magnet') w.magnetTimeLeft = MAGNET_DURATION;
       if (food.length < FOOD_COUNT) spawnFood(1);
     }
   }
@@ -236,7 +246,7 @@ function updateBotAI(w, dt) {
     let closest = null, cd = 220 * 220;
     for (let i = 0; i < food.length; i += 3) {
       const f = food[i];
-      const priority = (f.type === 'mult') ? (2 + f.value * 0.15) : (f.type === 'bonus' || f.type === 'heart') ? 2.4 : (f.type === 'bigcandy' ? 2 : f.type === 'candy' ? 1.5 : 1);
+      const priority = (f.type === 'mult') ? (2 + f.value * 0.15) : (f.type === 'bonus' || f.type === 'heart' || f.type === 'zoom' || f.type === 'magnet') ? 2.4 : (f.type === 'bigcandy' ? 2 : f.type === 'candy' ? 1.5 : 1);
       const d = dist2(head, f) / priority;
       if (d < cd) { cd = d; closest = f; }
     }
@@ -258,11 +268,36 @@ function updateBotAI(w, dt) {
   else if (Math.random() < 0.02) w.boosting = false;
 }
 
+function applyMagnetPull(w) {
+  const head = w.segs[0];
+  const r2 = MAGNET_RADIUS * MAGNET_RADIUS;
+  for (const f of food) {
+    const dx = head.x - f.x, dy = head.y - f.y;
+    const d2 = dx * dx + dy * dy;
+    if (d2 < r2 && d2 > 4) {
+      const d = Math.sqrt(d2);
+      // pull strength eases in near the edge of the radius, stronger up close
+      const pull = 6 * (1 - d / MAGNET_RADIUS) + 1.5;
+      f.x += (dx / d) * pull;
+      f.y += (dy / d) * pull;
+    }
+  }
+}
+
 function updateWorm(w, dt) {
   if (!w.alive) return;
   if (w.multTimeLeft > 0) {
     w.multTimeLeft -= dt;
     if (w.multTimeLeft <= 0) { w.multTimeLeft = 0; w.multiplier = 1; }
+  }
+  if (w.zoomTimeLeft > 0) {
+    w.zoomTimeLeft -= dt;
+    if (w.zoomTimeLeft < 0) w.zoomTimeLeft = 0;
+  }
+  if (w.magnetTimeLeft > 0) {
+    w.magnetTimeLeft -= dt;
+    if (w.magnetTimeLeft < 0) w.magnetTimeLeft = 0;
+    applyMagnetPull(w);
   }
 
   if (w.isBot) updateBotAI(w, dt);
@@ -381,6 +416,7 @@ setInterval(() => {
       id: w.id, name: w.name, color: w.color, stripes: w.stripes, emoji: w.emoji,
       pattern: w.pattern, face: w.face, dir: w.dir, thickness: w.thickness,
       multiplier: w.multiplier, multTimeLeft: Math.ceil(w.multTimeLeft),
+      zoomTimeLeft: Math.ceil(w.zoomTimeLeft), magnetTimeLeft: Math.ceil(w.magnetTimeLeft),
       lives: w.lives,
       segs: w.segs.filter((_, i) => i % 3 === 0)
     }));
